@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <title>Soundcloud does not play in Safari [FIXED]</title>
+        <meta name="viewport" content="width=device-width">
+        <script src="//cdnjs.cloudflare.com/ajax/libs/prettify/r298/run_prettify.min.js" type="text/javascript"></script>
+        <!-- syntax highlighting CSS -->
+        <link rel="stylesheet" href="/css/syntax.css">
+
+        <!-- Custom CSS -->
+        <link rel="stylesheet" href="/css/main.css">
+
+    </head>
+    <body>
+
+        <div class="site">
+          <div class="header">
+            <h1 class="title"><a href="/">Your New Jekyll Site</a></h1>
+            <a class="extra" href="/">home</a>
+          </div>
+
+          <h2>Soundcloud does not play in Safari [FIXED]</h2>
+<p class="meta">18 Mar 2014</p>
+
+<div class="post">
+<p>Soundcloud stopped working in Safari for some time now. Today when I couldn’t listen to a track shared via Facebook, I had enough and decided to take a closer look.</p>
+<p>A quick googling revealed that this is a <a href="http://help.soundcloud.com/customer/portal/articles/1464535-why-can-t-i-hear-tracks-using-safari-">known problem</a> due to new power saving features implemented in Safari. Though, I didn't like the workaround presented in the support page because Flash plugins are indeed a CPU and battery hog and I want Safari to save power on them.</p>
+<p>With this new feature, Safari does not automatically start plugins unless it is sure that the content is safe or you explicitly click on the plugin "box" to allow it. For video sites, this is not much of a problem, you click on the giant plugin box which says “Click to run the plugin” to start the plugin manually. But as with sites such as Soundcloud, the hidden flash player is a problem. There’s nowhere to click and explicitly allow the plugin to run! All the player controls you see are HTML interface to the Flash backend.</p>
+<p>In the preferences you can see a list of sites which the plugins will automatically start working. Unfortunately though, there are no ways to manually add sites to that list. You have to go through the above process and manually click to start a plugin once, so that Safari will add it to a list.</p>
+<div>
+<p>[caption id="attachment_800" align="aligncenter" width="668"]<a href="http://ea.tl/wp-content/uploads/2014/03/safari-power-save.png"><img class="size-full wp-image-800" alt="You can see the list of web sites that Safari will allow plugin execution automatically for." src="/assets/safari-power-save.png" width="668" height="445" /></a> You can see the list of web sites that Safari will allow plugin execution automatically for by clicking Details button.[/caption]</p>
+</div>
+<div>
+<p>[caption id="attachment_799" align="aligncenter" width="668"]<a href="http://ea.tl/wp-content/uploads/2014/03/safari-power-no-manual-add.png"><img class="size-full wp-image-799" alt="As you can see there are no user interface to manually add web pages here." src="/assets/safari-power-no-manual-add.png" width="668" height="466" /></a> As you can see there are no user interface to manually add web pages here.[/caption]</p>
+</div>
+<div></div>
+<div>So, I could either:</div>
+<div>
+<ol>
+<li>Hack through Safari config files and add soundcloud.com to that exception list externally.</li>
+<li>Make the Flash plugin visible so I can click on it.</li>
+</ol>
+<div>Obviously the second approach seems less risky as you can’t screw up configuration files. Here are step by step instructions:</div>
+</div>
+<div></div>
+<div>1. Open soundcloud.com in Safari and let it load.</div>
+<div>2. Try to play the track. This will make sure the player is injected in the page so we can perform next step.</div>
+<div>3. Make sure your "Show Develop Menu in menu bar" is checked in Preferences&gt;Advanced.<br />
+4. Open the Web Inspector from the Develop menu.</div>
+<div>5. Then execute the following by copy pasting it into the textfield at the bottom of the Web Inspector. You can edit the first 512 to adjust the size of the box that'll (hopefully) appear on your screen.</div>
+<div>
+<pre class="prettyprint">var w=512; $('#flashAudioObject').css({width:w, height:w, maxWidth:w, maxHeight: w}).parent().css({position:'absolute', top: '50%', left: '50%', marginTop:-w/2, marginLeft:-w/2, width:w, height: w, zIndex:999999})</pre>
+<p>6. A black box should appear in the center of your screen. Click in it a few times just to make sure.</p>
+<p>7. You should be able to play the track now and soundcloud.com will be listed in the exceptions listed mentioned above.</p>
+<p>That's it.</p>
+<p>&nbsp;</p>
+<p>Conclusion:</p>
+<p>IMHO, the best solution for SoundCloud would be to show a one time modal popup to users who are affected by the problem, guiding them to click on a (congratulations?) video to enforce this workaround.</p>
+<p>At the moment, users have to manually google the problem, then use an unideal workaround as fix.</p>
+</div>
+
+</div>
+
+
+          <div class="footer">
+            <div class="contact">
+              <p>
+                Engin AYDOGAN<br />
+                Thinker<br />
+                e@ea.tl
+              </p>
+            </div>
+            <div class="contact">
+              <p>
+                <a href="https://github.com/yourusername">github.com/engina</a><br />
+                <a href="https://twitter.com/yourusername">twitter.com/jastsayn</a><br />
+                <a class="extra" href="90s/">90s</a>
+              </p>
+            </div>
+          </div>
+        </div>
+    </body>
+</html>

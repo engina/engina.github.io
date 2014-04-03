@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <title>First Dojo impressions</title>
+        <meta name="viewport" content="width=device-width">
+        <script src="//cdnjs.cloudflare.com/ajax/libs/prettify/r298/run_prettify.min.js" type="text/javascript"></script>
+        <!-- syntax highlighting CSS -->
+        <link rel="stylesheet" href="/css/syntax.css">
+
+        <!-- Custom CSS -->
+        <link rel="stylesheet" href="/css/main.css">
+
+    </head>
+    <body>
+
+        <div class="site">
+          <div class="header">
+            <h1 class="title"><a href="/">Your New Jekyll Site</a></h1>
+            <a class="extra" href="/">home</a>
+          </div>
+
+          <h2>First Dojo impressions</h2>
+<p class="meta">22 Jan 2010</p>
+
+<div class="post">
+<p>I started implementing a daemon in Java. Essentially all our devices will connect to it and wait for commands over TCP/IP. Additionally it will offer a web service REST API over HTTP, so that administrators can send/receive data from the devices. This is basically a relaying architecture between devices and administrators. It overcomes any network topology problem (i.e. NAT traversals.) with performance penalty and bandwidth costs of relaying. Web service API is going to be totally self-sufficient, such that totally static HTML pages with Javascript can interact with it.</p>
+<p>I've implemented the skeleton of the daemon, devices connect to it and it also offers web service API. I tested the web service API by simply requesting the web service URL from the browser as I would do any other URL and confirmed that the correct (JSON) response is given. It was time to see how it is to build a web UI for it. Given its reputation and apparent support, I chose Dojo to implement the web UI with totally static HTML pages. Here's my experience.</p>
+<p><strong>Documentation</strong></p>
+<p>From the main Dojo site, it was stated that latest stable release was 1.4.0, and it was the default download link. So I grabbed it. By looking at an example in the demo section, I get an Ajax query working in seconds, only to find out that it is not working for me. Instead of a GET request it was sending OPTIONS request, more on this later. Obviously, I wanted to look at the documentation. Clicking on the Documentation link on the main Dojo site takes you to a place where documentation for 1.4.0 is not offered.</p>
+<p>Luckily there were a handful of helpful folks in #dojo @ irc.freenode.net, whom told me that new documentation UI is on its way.</p>
+<ul>
+<li><a href="http://api-staging.dojotoolkit.org/">http://api-staging.dojotoolkit.org/</a></li>
+<li><a href="http://doc-staging.dojocampus.org/dojo/index.html">http://doc-staging.dojocampus.org/dojo/index.html</a></li>
+</ul>
+<p>The first one was inaccurate by the time I'm writing this Dojo.xhrGet property list was quite short. I found doc-staging to be more accurate and since it is documentation rather than just reference it also offered much more detail.</p>
+<p><strong>Dojo.xhrGet results in OPTIONS request instead of GET</strong></p>
+<p>The firs thing I've tried with Dojo was obviously the Ajax API.</p>
+<pre class="prettyprint">function getText() {
+  dojo.xhrGet({
+    url: "http://localhost:8182/hello",
+    load: function(responseObject, ioArgs){
+      return responseObject;
+    },
+    error: function(response, ioArgs){
+      dojo.byId("toBeReplaced").innerHTML =
+        "An error occurred, with response: " + response;
+      return response;
+    },
+    handleAs: "json"
+  });
+}</pre>
+<p>This code snippet is taken from Dojo examples which can be found in the official web site. I removed the content of the first function though, it was supposed to do DOM manipulation obviously.</p>
+<p>When I run this code, I noticed OPTIONS request in my daemon's logs. When I was requesting the same URL by writing it to the address bar of the browser all I see was GET requests in my logs, as expected.</p>
+<p>Then I've tried a pure JS implementation.</p>
+<pre class="prettyprint">var client = new XMLHttpRequest();
+client.onreadystatechange = handler;
+client.open("GET", "http://192.168.1.94:8182/hello");
+client.send();</pre>
+<p>With this simple implementation I started seeing GET requests in my server as expected. So Dojo should be doing something in a different way. I walked through the Dojo code, thanks to Firebug.  But it turned out that the code is indeed very similar to the regular JS code and there were no obvious bugs, as I expected. Then, I examined the HTTP requests via invaluable Wireshark.</p>
+<p>Here's what I got for Dojo request.</p>
+<pre class="prettyprint">OPTIONS /hello HTTP/1.1
+Host: 192.168.1.94:8182
+Connection: keep-alive
+User-Agent: Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10_6_2; en-US) AppleWebKit/532.5 (KHTML, like Gecko) Chrome/4.0.249.49 Safari/532.5
+Cache-Control: max-age=0
+Access-Control-Request-Method: POST
+Origin: file://
+Access-Control-Request-Headers: X-Prototype-Version, X-Requested-With, Content-type, Accept
+Accept: */*
+Accept-Encoding: gzip,deflate
+Accept-Language: tr-TR,tr;q=0.8,en-US;q=0.6,en;q=0.4
+Accept-Charset: ISO-8859-9,utf-8;q=0.7,*;q=0.3</pre>
+<p>And here's what a regular JS XHR looks like.</p>
+<pre class="prettyprint">GET /hello HTTP/1.1
+Host: 192.168.1.94:8182
+Connection: keep-alive
+User-Agent: Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10_6_2; en-US) AppleWebKit/532.5 (KHTML, like Gecko) Chrome/4.0.249.49 Safari/532.5
+Cache-Control: max-age=0
+Origin: file://
+Accept: */*
+Accept-Encoding: gzip,deflate
+Accept-Language: tr-TR,tr;q=0.8,en-US;q=0.6,en;q=0.4
+Accept-Charset: ISO-8859-9,utf-8;q=0.7,*;q=0.3</pre>
+<p>Obviously the difference is <em>Access-Control-*</em> properties. I tracked down the source of this was the lines from 10474 to 10477 of dojo.js</p>
+<pre class="prettyprint"> // FIXME: is this appropriate for all content types?
+10474 xhr.setRequestHeader("Content-Type", args.contentType || _defaultContentType);
+10475 if(!args.headers || !("X-Requested-With" in args.headers)){
+10476 xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
+10477 }</pre>
+<p>Funny thing, there's a FIXME there :) Anyway, when I commented out these lines the request headers were the same for both pure JS Ajax implementation and the Dojo Ajax implementation. And both are now sending GET requests as expected.</p>
+<p>I consulted the folks at #dojo about this problem and at first they couldn't create the problem. Than I've stated that the web UI is hosted at X and the web service API of the deamon was at X:P. So it is a cross-domain request. To be precise the script was hosted at http://192.168.1.94/test.html and web service API of the daemon was available at http://192.168.1.94:8182/hello. <em>sfoster</em> from #dojo generously spent some time to test this situation and he also confirmed that OPTIONS requests were being sent. <strong>Apparently when Access-Control-* headers are set and it is a cross-domain request browsers decide to send OPTIONS request instead of GET.</strong> This is tested with Chrome and Firefox.</p>
+<p>Though I believe Access-Control-* properties are there for a good reason. This same problem could also be demonstrated on prototype javascript framework, apparently they are taking the same approach on this.</p>
+<p>I'm not sure what is the best practice on this yet, I'll try to consult some core Dojo developers about this and figure it out.</p>
+
+</div>
+
+
+          <div class="footer">
+            <div class="contact">
+              <p>
+                Engin AYDOGAN<br />
+                Thinker<br />
+                e@ea.tl
+              </p>
+            </div>
+            <div class="contact">
+              <p>
+                <a href="https://github.com/yourusername">github.com/engina</a><br />
+                <a href="https://twitter.com/yourusername">twitter.com/jastsayn</a><br />
+                <a class="extra" href="90s/">90s</a>
+              </p>
+            </div>
+          </div>
+        </div>
+    </body>
+</html>

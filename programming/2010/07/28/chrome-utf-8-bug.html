@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <title>Chrome UTF-8 bug</title>
+        <meta name="viewport" content="width=device-width">
+        <script src="//cdnjs.cloudflare.com/ajax/libs/prettify/r298/run_prettify.min.js" type="text/javascript"></script>
+        <!-- syntax highlighting CSS -->
+        <link rel="stylesheet" href="/css/syntax.css">
+
+        <!-- Custom CSS -->
+        <link rel="stylesheet" href="/css/main.css">
+
+    </head>
+    <body>
+
+        <div class="site">
+          <div class="header">
+            <h1 class="title"><a href="/">Your New Jekyll Site</a></h1>
+            <a class="extra" href="/">home</a>
+          </div>
+
+          <h2>Chrome UTF-8 bug</h2>
+<p class="meta">28 Jul 2010</p>
+
+<div class="post">
+<p>I cannot believe what I'm seeing. UTF-8 implementations failed miserably.</p>
+<p>There's a character in Turkish alphabet, it is capital "i", just like "I" but with a dot on top of it. Why am I describing it instead of just showing it ? Well, Wordpress also seems to be unable to handle it. From now on, [ci] refers to this special character in this post.</p>
+<p><span style="font-size: large;"><strong>Chrome bug</strong></span></p>
+<p>toLowerCase() of Chrome 5.0.375.99 is buggy. If a string contains [ci], the resulting string has artifacts. For instance assume you have the original string "[ci]ello", which is 5 characters long. When you feed it to toLowerCase() the resulting string will be 6 characters long with a "garbage" data after the converted [ci]. The results is something like i\xxxello. There's a garbage after "i" which you can see via charCodeAt().</p>
+<p><span style="font-size: large;"><strong>Firefox is plagued too</strong></span></p>
+<p>Then I tried in-case-sensitive RegExp matching. Trying to match "[ci]ello" with "/iello/i" failed both on Chrome 5.0.375.99 and Firefox 3.6.8.</p>
+<p><span style="font-size: large;"><strong>Internet Explorer 8 kicked ass or what ?</strong></span></p>
+<p>Even though I, very objectively, hate IE series too I should note that IE8's toLowerCase and RegExp matching works perfectly. In your face, all Microsoft haters :)</p>
+<p><span style="font-size: large;"><strong>What about toUpperCase() ?</strong></span></p>
+<p>On all browsers toUpperCase converts "i" to "I" and not to "[ci]" and they should, since the context (language) is not known and English is naturally assumed to be the one in use, converting "i" to "I" is perfectly acceptable. Though it doesn't make it right. In Turkish toUpperCase("i") should return "[ci]". Which makes Javascript look inadequate at handling internationalization.</p>
+
+</div>
+
+
+          <div class="footer">
+            <div class="contact">
+              <p>
+                Engin AYDOGAN<br />
+                Thinker<br />
+                e@ea.tl
+              </p>
+            </div>
+            <div class="contact">
+              <p>
+                <a href="https://github.com/yourusername">github.com/engina</a><br />
+                <a href="https://twitter.com/yourusername">twitter.com/jastsayn</a><br />
+                <a class="extra" href="90s/">90s</a>
+              </p>
+            </div>
+          </div>
+        </div>
+    </body>
+</html>

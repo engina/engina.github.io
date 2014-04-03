@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <title>Making multiple VPN connections and using them at the same time</title>
+        <meta name="viewport" content="width=device-width">
+        <script src="//cdnjs.cloudflare.com/ajax/libs/prettify/r298/run_prettify.min.js" type="text/javascript"></script>
+        <!-- syntax highlighting CSS -->
+        <link rel="stylesheet" href="/css/syntax.css">
+
+        <!-- Custom CSS -->
+        <link rel="stylesheet" href="/css/main.css">
+
+    </head>
+    <body>
+
+        <div class="site">
+          <div class="header">
+            <h1 class="title"><a href="/">Your New Jekyll Site</a></h1>
+            <a class="extra" href="/">home</a>
+          </div>
+
+          <h2>Making multiple VPN connections and using them at the same time</h2>
+<p class="meta">09 Mar 2012</p>
+
+<div class="post">
+<p>As I figured <a href="http://engin.bzzzt.biz/2012/03/09/making-certain-clients-on-lan-use-a-particular-vpn-connection-with-mikrotik/">how to make certain clients on LAN to use a VPN</a>, I was a bit unsatisfied with the performance of the VPN connection (read: low transfer rates). Then I remembered that we can add multiple routes (<a href="http://www.mikrotik.com/testdocs/ros/2.9/ip/route.php">explained here</a>). Which means one connection a client makes are routed via VPN0, the other one is routed from VPN1. Hell, you can even add same VPN again and again so that it is used more often.</p>
+<p>So as an addition to my previous post, you can simple add more VPN connections in interfaces. Then at the same routing rule, you can add all those VPN connection as gateways. It looks like this:</p>
+<pre class="prettyprint">[admin@MikroTik] &gt; ip route print
+Flags: X - disabled, A - active, D - dynamic, C - connect, S - static, r - rip, b - bgp, o - ospf, m - mme, 
+B - blackhole, U - unreachable, P - prohibit 
+ #      DST-ADDRESS        PREF-SRC        GATEWAY            DISTANCE
+ 0 A S  0.0.0.0/0                          pptp-out2          1       
+                                           pptp-out1         
+                                           pptp-out3</pre>
+<p>It is the rule that matches the packets with route-mark, I added more gateways to it. Now when a connection is made, it is routed via one of these.</p>
+<p>Now, you can use all the cumulative bandwidth all these servers allocated for you.</p>
+<p>Though, I couldn't make burst of multiple connection attempts distributed over these gateways yet. Which means, if a client opens many connections rapidly, they are all routed from one gateway. If I can figure this out,  a segmented downloading for instance, would be MUCH faster with many VPN servers utilized.</p>
+
+</div>
+
+
+          <div class="footer">
+            <div class="contact">
+              <p>
+                Engin AYDOGAN<br />
+                Thinker<br />
+                e@ea.tl
+              </p>
+            </div>
+            <div class="contact">
+              <p>
+                <a href="https://github.com/yourusername">github.com/engina</a><br />
+                <a href="https://twitter.com/yourusername">twitter.com/jastsayn</a><br />
+                <a class="extra" href="90s/">90s</a>
+              </p>
+            </div>
+          </div>
+        </div>
+    </body>
+</html>

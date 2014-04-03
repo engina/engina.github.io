@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <title>explorer.exe hard faults excessively and opens way too many file handles -- looks like tortoise svn is slowing me down, what a surprise.</title>
+        <meta name="viewport" content="width=device-width">
+        <script src="//cdnjs.cloudflare.com/ajax/libs/prettify/r298/run_prettify.min.js" type="text/javascript"></script>
+        <!-- syntax highlighting CSS -->
+        <link rel="stylesheet" href="/css/syntax.css">
+
+        <!-- Custom CSS -->
+        <link rel="stylesheet" href="/css/main.css">
+
+    </head>
+    <body>
+
+        <div class="site">
+          <div class="header">
+            <h1 class="title"><a href="/">Your New Jekyll Site</a></h1>
+            <a class="extra" href="/">home</a>
+          </div>
+
+          <h2>explorer.exe hard faults excessively and opens way too many file handles -- looks like tortoise svn is slowing me down, what a surprise.</h2>
+<p class="meta">14 Feb 2011</p>
+
+<div class="post">
+<div class="update">
+<p style="margin: 6px 0px 6px 0px">
+<span style="font-size: medium;"><strong>UPDATE:</strong> It turned out that the reason is not TortoiseSVN, my apologies to the development team.</span></p>
+</div>
+<p>Recently, more and more often, explorer.exe started to cause excessive hard faults like 13k/min. When I tried to look at what the fuck explorer.exe is doing, I noticed it was opening hundreds of file handles in my Code directory, which has several sub directories with hundreds of thousands of small files (source codes). I saw this a few times but this time it struck me that it could be because of Tortoise SVN. When you open a folder in Windows Explorer, soon you start to see SVN folders are marked with an icon, thanks to Tortoise SVN. To achieve that it must be traversing through subfolders and looking for the infamous hidden .svn folder.</p>
+<p>With that in mind, I started to examine opened file handles more closely. Then I realized that most of them are .svn folders. So, I uninstalled Tortoise SVN immediately it asked me for a reboot, I said "no". I manually restarted explorer.exe process to get rid of the in-memory Tortoise SVN. Now my hard faults looks like stopped.</p>
+<p>And it is indeed quite ironic that a software named Tortoise slowed my computer down. So, we found something else SVN is bad at :)</p>
+
+</div>
+
+
+          <div class="footer">
+            <div class="contact">
+              <p>
+                Engin AYDOGAN<br />
+                Thinker<br />
+                e@ea.tl
+              </p>
+            </div>
+            <div class="contact">
+              <p>
+                <a href="https://github.com/yourusername">github.com/engina</a><br />
+                <a href="https://twitter.com/yourusername">twitter.com/jastsayn</a><br />
+                <a class="extra" href="90s/">90s</a>
+              </p>
+            </div>
+          </div>
+        </div>
+    </body>
+</html>

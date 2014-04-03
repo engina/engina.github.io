@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <title>Java Gotcha: Executing code via Timer vs ScheduledExecutorService</title>
+        <meta name="viewport" content="width=device-width">
+        <script src="//cdnjs.cloudflare.com/ajax/libs/prettify/r298/run_prettify.min.js" type="text/javascript"></script>
+        <!-- syntax highlighting CSS -->
+        <link rel="stylesheet" href="/css/syntax.css">
+
+        <!-- Custom CSS -->
+        <link rel="stylesheet" href="/css/main.css">
+
+    </head>
+    <body>
+
+        <div class="site">
+          <div class="header">
+            <h1 class="title"><a href="/">Your New Jekyll Site</a></h1>
+            <a class="extra" href="/">home</a>
+          </div>
+
+          <h2>Java Gotcha: Executing code via Timer vs ScheduledExecutorService</h2>
+<p class="meta">11 Jan 2011</p>
+
+<div class="post">
+<p>A customer called to report that he cannot read values of two of his devices from the server. In fact, he was not able to read any values of any devices, but since he is served with the most up to date cache results for the other devices, he was not aware of that part of the problem. I connected to the server via remote debugging of Java, which kicks ass by the way, only to find out that the <a href="http://download.oracle.com/javase/6/docs/api/java/util/Timer.html">Timer</a> is not executing my code which update the values of the devices currently being watched. It was weird, because the server has been running for weeks and it just stop functioning. It turned out that if an exception occurs in the code Timer is calling, Timer stops executing the code all together in the future. Which, in practice, means that one of your threads is not functioning anymore. Then I learned about <a href="http://download.oracle.com/javase/6/docs/api/java/util/concurrent/ScheduledExecutorService.html">ScheduledExecutorService</a>, it is specifically designed to run code. It handles exceptions much more gracefully. So, long story short, use <a href="http://download.oracle.com/javase/6/docs/api/java/util/concurrent/ScheduledExecutorService.html">ScheduledExecutorService</a> instead of <a href="http://download.oracle.com/javase/6/docs/api/java/util/Timer.html">Timer</a> when you want to execute code. The good thing is, it is quite easy to port your code to use <a href="http://download.oracle.com/javase/6/docs/api/java/util/concurrent/ScheduledExecutorService.html">ScheduledExecutorService</a>.</p>
+
+</div>
+
+
+          <div class="footer">
+            <div class="contact">
+              <p>
+                Engin AYDOGAN<br />
+                Thinker<br />
+                e@ea.tl
+              </p>
+            </div>
+            <div class="contact">
+              <p>
+                <a href="https://github.com/yourusername">github.com/engina</a><br />
+                <a href="https://twitter.com/yourusername">twitter.com/jastsayn</a><br />
+                <a class="extra" href="90s/">90s</a>
+              </p>
+            </div>
+          </div>
+        </div>
+    </body>
+</html>

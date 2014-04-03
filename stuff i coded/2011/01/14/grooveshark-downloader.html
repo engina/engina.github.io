@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <title>Grooveshark Downloader</title>
+        <meta name="viewport" content="width=device-width">
+        <script src="//cdnjs.cloudflare.com/ajax/libs/prettify/r298/run_prettify.min.js" type="text/javascript"></script>
+        <!-- syntax highlighting CSS -->
+        <link rel="stylesheet" href="/css/syntax.css">
+
+        <!-- Custom CSS -->
+        <link rel="stylesheet" href="/css/main.css">
+
+    </head>
+    <body>
+
+        <div class="site">
+          <div class="header">
+            <h1 class="title"><a href="/">Your New Jekyll Site</a></h1>
+            <a class="extra" href="/">home</a>
+          </div>
+
+          <h2>Grooveshark Downloader</h2>
+<p class="meta">14 Jan 2011</p>
+
+<div class="post">
+<p>I've spent the previous night studying (sniffing) how grooveshark works and today I've coded this downloader. It has no error handling and it is full of bugs. But it kinda works. You can <a href="http://engin.bzzzt.biz/sharkit/">try it</a>.</p>
+<p><img alt="Screenshot" src="/assets/screenshot.png" width="647" height="359" /></p>
+<p>Previous night I took some notes</p>
+<div id="groovenotes" style="display: block;">
+<pre style="overflow: scrol;" class="prettyprint">Grooveshark analysis
+---------------------------
+1. Uses Chrome (HTML 5) storage to store current song queue
+2. If storage is deleted it POSTs to /more.php?getQueueSongListFromSongIDs HTTP/1.1\r\n
+This post can be captured with Wireshark. It looks like Chrome does not list it in Developer Tool XHR requests list since it is originated from JSQueue.swf
+{"parameters":{"songIDs":[23040605,46065,46069,3743080,25221748,2222586,11683867,8686239,6313365,21866871,19664846,17907995,24156270,24512293,14683724,24465995,28318547,23198432,3879288,3879291,25423677,25423698,844631,1638706,1638712,1784279,25168338,5475413]},"header":{"token":"470df2230f39522fb167c1e49d86e76f987293b2e32ebb","session":"f5992e2e4a39a9aa65d10275bf358ae8","client":"jsqueue","clientRevision":"20101012.37","privacy":0,"uuid":"EADC6534-03A8-43D0-A6EA-B2AECA75E458","country":{"CC4":"2097152","IPR":"9581","CC2":"0","CC1":"0","ID":"214","CC3":"0"}},"method":"getQueueSongListFromSongIDs"}
+
+3. Looks like all the HTTP transfers are gzipped, Wireshark gracefully uncompressed it, remind me to donate 10 millions dollars to this project, it saved 10 years of debugging time every year. The result of this query is plain JSON. Sweet.
+
+{"header":{"session":"f5992e2e4a39a9aa65d10275bf358ae8","serviceVersion":"20100903","prefetchEnabled":true},"result":[{"SongID":"23040605","Name":"Theme Black Orpheus","SongNameID":"3620182","AlbumID":"3399320","AlbumName":"","ArtistID":"504376","ArtistName":"Paul Desmond &amp; Jim Hall","AvgRating":null,"IsVerified":"0","CoverArtFilename":null,"Year":null,"UserRating":"0","EstimateDuration":"249","Popularity":"0","TrackNum":"0","IsLowBitrateAvailable":"1","Flags":"0"},{"SongID":"46065","Name":"Yegelle Tezeta","SongNameID":"36562","AlbumID":"136037","AlbumName":"Broken Flowers","ArtistID":"6062","ArtistName":"Mulatu Astatke","AvgRating":null,"IsVerified":"0","CoverArtFilename":null,"Year":"2005","UserRating":"0","EstimateDuration":"194","Popularity":"1014300032","TrackNum":"2","IsLowBitrateAvailable":"1","Flags":"0"},{"SongID":"46069","Name":"Yekermo Sew","SongNameID":"36566","AlbumID":"136037","AlbumName":"Broken Flowers","ArtistID":"6062","ArtistName":"Mulatu Astatke","AvgRating":null,"IsVerified":"0","CoverArtFilename":null,"Year":"2005","UserRating":"0","EstimateDuration":"255","Popularity":"1014300025","TrackNum":"5","IsLowBitrateAvailable":"1","Flags":"0"},{"SongID":"3743080","Name":"Dimineata","SongNameID":"1432632","AlbumID":"221654","AlbumName":"Bucovina Club","ArtistID":"28825","ArtistName":"Shantel","AvgRating":null,"IsVerified":"0","CoverArtFilename":"221654.jpg","Year":"2003","UserRating":"0","EstimateDuration":"212","Popularity":"0","TrackNum":"4","IsLowBitrateAvailable":"1","Flags":"0"},{"SongID":"25221748","Name":"Rodrigo Concierto De Aranjuez","SongNameID":"12979369","AlbumID":"4288613","AlbumName":"Masterworks Reworked - Remixes For A New Generation","ArtistID":"1388476","ArtistName":"Tangarine Dor","AvgRating":null,"IsVerified":"0","CoverArtFilename":null,"Year":"2004","UserRating":"0","EstimateDuration":"387","Popularity":"0","TrackNum":"7","IsLowBitrateAvailable":"1","Flags":"0"},{"SongID":"2222586","Name":"Dror Yikra","SongNameID":"1409433","AlbumID":"409005","AlbumName":"Laughter Through Tears","ArtistID":"51175","ArtistName":"Oi Va Voi","AvgRating":null,"IsVerified":"0","CoverArtFilename":"9033c6057abc73f06d80728d801878ed.png","Year":"2003","UserRating":"0","EstimateDuration":"357","Popularity":"0","TrackNum":"7","IsLowBitrateAvailable":"1","Flags":"0"},{"SongID":"11683867","Name":"Lost in Amsterdam","SongNameID":"4783057","AlbumID":"220573","AlbumName":"Shine","ArtistID":"101139","ArtistName":"Parov Stelar","AvgRating":null,"IsVerified":"1","CoverArtFilename":"4826712.jpg","Year":"2002","UserRating":"0","EstimateDuration":"208","Popularity":"1035600135","TrackNum":"6","IsLowBitrateAvailable":"1","Flags":"0"},{"SongID":"8686239","Name":"Homesick","SongNameID":"15969","AlbumID":"220573","AlbumName":"Shine","ArtistID":"101139","ArtistName":"Parov Stelar","AvgRating":null,"IsVerified":"1","CoverArtFilename":"4826712.jpg","Year":"2002","UserRating":"0","EstimateDuration":"212","Popularity":"1035600101","TrackNum":"0","IsLowBitrateAvailable":"1","Flags":"0"},{"SongID":"6313365","Name":"Love","SongNameID":"18383","AlbumID":"997764","AlbumName":"Bridget Jones Diary","ArtistID":"96189","ArtistName":"Rosey","AvgRating":null,"IsVerified":"0","CoverArtFilename":"11768151.jpg","Year":null,"UserRating":"0","EstimateDuration":"218","Popularity":"1014300012","TrackNum":"3","IsLowBitrateAvailable":"1","Flags":"0"},{"SongID":"21866871","Name":"Everyday Is a Winding Road","SongNameID":"272627","AlbumID":"156610","AlbumName":"Sheryl Crow","ArtistID":"597","ArtistName":"Sheryl Crow","AvgRating":null,"IsVerified":"1","CoverArtFilename":"ba06f31fb0b355b586cc52fe446bfd58.png","Year":"1996","UserRating":"0","EstimateDuration":"257","Popularity":"1035600053","TrackNum":"8","IsLowBitrateAvailable":"1","Flags":"0"},{"SongID":"19664846","Name":"Maria Maria (feat. The Product G &amp; B)","SongNameID":"6961539","AlbumID":"835280","AlbumName":"Ultimate Santana","ArtistID":"2368","ArtistName":"Santana","AvgRating":null,"IsVerified":"1","CoverArtFilename":"4911749.jpg","Year":"2007","UserRating":"0","EstimateDuration":"262","Popularity":"1035600172","TrackNum":"3","IsLowBitrateAvailable":"1","Flags":"0"},{"SongID":"17907995","Name":"Love of My Life (feat. Dave Matthews)","SongNameID":"1800692","AlbumID":"1085958","AlbumName":"Supernatural","ArtistID":"2368","ArtistName":"Santana","AvgRating":null,"IsVerified":"1","CoverArtFilename":"16261924.jpg","Year":null,"UserRating":"0","EstimateDuration":"347","Popularity":"1035600034","TrackNum":"2","IsLowBitrateAvailable":"1","Flags":"0"},{"SongID":"24156270","Name":"Mishale","SongNameID":"1824589","AlbumID":"3849340","AlbumName":"Best Of","ArtistID":"44742","ArtistName":"Andru Donalds","AvgRating":null,"IsVerified":"0","CoverArtFilename":null,"Year":"2006","UserRating":"0","EstimateDuration":"241","Popularity":"0","TrackNum":"1","IsLowBitrateAvailable":"0","Flags":"0"},{"SongID":"24512293","Name":"Bahsettigim Rastlantilar","SongNameID":"12211511","AlbumID":"3299052","AlbumName":"Mutlu Olmak Istiyorum","ArtistID":"292409","ArtistName":"Mirkelam","AvgRating":null,"IsVerified":"0","CoverArtFilename":null,"Year":"2006","UserRating":"0","EstimateDuration":"275","Popularity":"0","TrackNum":"11","IsLowBitrateAvailable":"1","Flags":"0"},{"SongID":"14683724","Name":"The Windmills of Your Mind","SongNameID":"14963","AlbumID":"2372963","AlbumName":"Dusty in Memphis","ArtistID":"3874","ArtistName":"Dusty Springfield","AvgRating":null,"IsVerified":"1","CoverArtFilename":"ae44d92f135228963667b17bb39783c2.png","Year":"1999","UserRating":"0","EstimateDuration":"231","Popularity":"0","TrackNum":"8","IsLowBitrateAvailable":"1","Flags":"0"},{"SongID":"24465995","Name":"Alors On Danse","SongNameID":"12053707","AlbumID":"3943832","AlbumName":"Alors On Danse","ArtistID":"1306665","ArtistName":"Stromae","AvgRating":null,"IsVerified":"0","CoverArtFilename":"3943832.jpg","Year":"1901","UserRating":"0","EstimateDuration":"208","Popularity":"1035601210","TrackNum":"0","IsLowBitrateAvailable":"1","Flags":"0"},{"SongID":"28318547","Name":"The Time (The Dirty Bit)","SongNameID":"14066530","AlbumID":"5310025","AlbumName":"The Beginning","ArtistID":"150908","ArtistName":"The Black Eyes Peas","AvgRating":null,"IsVerified":"0","CoverArtFilename":null,"Year":"2010","UserRating":"0","EstimateDuration":null,"Popularity":"0","TrackNum":"1","IsLowBitrateAvailable":"0","Flags":"0"},{"SongID":"23198432","Name":"One Love (feat. Estelle)","SongNameID":"10721059","AlbumID":"4434782","AlbumName":"One Love","ArtistID":"229","ArtistName":"David Guetta","AvgRating":null,"IsVerified":"1","CoverArtFilename":null,"Year":"2009","UserRating":"0","EstimateDuration":"240","Popularity":"1035600410","TrackNum":"11","IsLowBitrateAvailable":"1","Flags":"0"},{"SongID":"3879288","Name":"Break 4 Love (Vs Keith Thompson)","SongNameID":"1681448","AlbumID":"387832","AlbumName":"Rendez Vous","ArtistID":"52882","ArtistName":"David Vendetta","AvgRating":null,"IsVerified":"0","CoverArtFilename":"6531864.jpg","Year":"2007","UserRating":"0","EstimateDuration":"241","Popularity":"1013400012","TrackNum":"2","IsLowBitrateAvailable":"1","Flags":"0"},{"SongID":"3879291","Name":"Bleeding Heart (Feat. Rachael Star)","SongNameID":"1681450","AlbumID":"387832","AlbumName":"Rendez Vous","ArtistID":"52882","ArtistName":"David Vendetta","AvgRating":null,"IsVerified":"0","CoverArtFilename":"6531864.jpg","Year":"2007","UserRating":"0","EstimateDuration":"375","Popularity":"1013400011","TrackNum":"5","IsLowBitrateAvailable":"1","Flags":"0"},{"SongID":"25423677","Name":"Love To Love You Baby","SongNameID":"119122","AlbumID":"4363188","AlbumName":"David Vendetta In Paradise Ibiza","ArtistID":"52882","ArtistName":"David Vendetta","AvgRating":null,"IsVerified":"0","CoverArtFilename":null,"Year":"2006","UserRating":"0","EstimateDuration":null,"Popularity":"0","TrackNum":"1","IsLowBitrateAvailable":"1","Flags":"0"},{"SongID":"25423698","Name":"Unidos Para La Musica","SongNameID":"904161","AlbumID":"4363188","AlbumName":"David Vendetta In Paradise Ibiza","ArtistID":"52882","ArtistName":"David Vendetta","AvgRating":null,"IsVerified":"0","CoverArtFilename":null,"Year":"2006","UserRating":"0","EstimateDuration":null,"Popularity":"0","TrackNum":"3","IsLowBitrateAvailable":"1","Flags":"0"},{"SongID":"844631","Name":"Crush","SongNameID":"14802","AlbumID":"2412492","AlbumName":"Jennifer Paige","ArtistID":"3321","ArtistName":"Jennifer Paige","AvgRating":null,"IsVerified":"1","CoverArtFilename":"3432915.jpg","Year":"1998","UserRating":"0","EstimateDuration":"200","Popularity":"1035600048","TrackNum":"0","IsLowBitrateAvailable":"1","Flags":"0"},{"SongID":"1638706","Name":"Firestarter","SongNameID":"6045","AlbumID":"458026","AlbumName":"Prodigy","ArtistID":"1345","ArtistName":"Prodigy","AvgRating":null,"IsVerified":"0","CoverArtFilename":null,"Year":null,"UserRating":"0","EstimateDuration":"280","Popularity":"1035600205","TrackNum":null,"IsLowBitrateAvailable":"1","Flags":"0"},{"SongID":"1638712","Name":"Smack My Bitch Up","SongNameID":"11694","AlbumID":"458026","AlbumName":"Prodigy","ArtistID":"1345","ArtistName":"Prodigy","AvgRating":null,"IsVerified":"0","CoverArtFilename":null,"Year":null,"UserRating":"0","EstimateDuration":"342","Popularity":"1035600199","TrackNum":null,"IsLowBitrateAvailable":"1","Flags":"0"},{"SongID":"1784279","Name":"Eleanor Rigby","SongNameID":"7003","AlbumID":"121936","AlbumName":"Anthology","ArtistID":"2335","ArtistName":"Ray Charles","AvgRating":null,"IsVerified":"1","CoverArtFilename":"4e8d89b01995c7506c8a5497521f7785.png","Year":null,"UserRating":"0","EstimateDuration":"180","Popularity":"1021400036","TrackNum":"18","IsLowBitrateAvailable":"1","Flags":"0"},{"SongID":"25168338","Name":"Duymak Istiyorum","SongNameID":"6271550","AlbumID":"4262141","AlbumName":"Duymak Istiyorum","ArtistID":"494565","ArtistName":"Cemali","AvgRating":null,"IsVerified":"0","CoverArtFilename":null,"Year":"1995","UserRating":"0","EstimateDuration":"276","Popularity":"0","TrackNum":"6","IsLowBitrateAvailable":"1","Flags":"0"},{"SongID":"5475413","Name":"Teardrop","SongNameID":"10374","AlbumID":"299925","AlbumName":"Teardrop","ArtistID":"2217","ArtistName":"Massive Attack","AvgRating":null,"IsVerified":"1","CoverArtFilename":"7fe7a9175e8cb8da70b514f28cd34465.png","Year":"1998","UserRating":"0","EstimateDuration":"282","Popularity":"923600047","TrackNum":null,"IsLowBitrateAvailable":"1","Flags":"0"}]}
+
+4. When I hit play, it POSTs to http://listen.grooveshark.com/more.php?getTokenForSong
+
+POST /more.php?getTokenForSong HTTP/1.1
+Host: listen.grooveshark.com
+Connection: keep-alive
+Referer: http://listen.grooveshark.com/
+Content-Length: 444
+Origin: http://listen.grooveshark.com
+X-Requested-With: XMLHttpRequest
+Content-Type: application/json
+Accept: application/json, text/javascript, */*; q=0.01
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.0; en-US) AppleWebKit/534.10 (KHTML, like Gecko) Chrome/8.0.552.224 Safari/534.10
+Accept-Encoding: gzip,deflate,sdch
+Accept-Language: tr-TR,tr;q=0.8,en-US;q=0.6,en;q=0.4
+Accept-Charset: ISO-8859-9,utf-8;q=0.7,*;q=0.3
+Cookie: __qca=P0-2035555991-1279657891648; __gads=ID=4a5ed88e2a1b2210:T=1279693202:S=ALNI_MZjGW8no2rUnK1xYCDRF2HaKxvl4A; cc=TR; __utmz=188916662.1291803947.234.2.utmcsr=facebook.com|utmccn=(referral)|utmcmd=referral|utmcct=/l.php; __utma=188916662.1865912194.1279657891.1292671256.1292675404.255; PHPSESSID=f5992e2e4a39a9aa65d10275bf358ae8
+
+{"header":{"client":"htmlshark","clientRevision":20100831,"privacy":"0","country":{"ID":"214","CC1":"0","CC2":"0","CC3":"0","CC4":"2097152","IPR":"9581"},"uuid":"EADC6534-03A8-43D0-A6EA-B2AECA75E458","session":"f5992e2e4a39a9aa65d10275bf358ae8","token":"92d8166213633ceb97beb86366c2690710c33428345824"},"method":"getTokenForSong","parameters":{"songID":"46065","country":{"ID":"214","CC1":"0","CC2":"0","CC3":"0","CC4":"2097152","IPR":"9581"}}}
+
+Response is:
+
+HTTP/1.1 200 OK
+Server: nginx
+Date: Wed, 12 Jan 2011 23:58:24 GMT
+Content-Type: text/html; charset=UTF-8
+Connection: close
+X-Powered-By: PHP/5.2.13
+Set-Cookie: PHPSESSID=f5992e2e4a39a9aa65d10275bf358ae8; expires=Wed, 19-Jan-2011 23:58:24 GMT; path=/; domain=.grooveshark.com
+Set-Cookie: PHPSESSID=f5992e2e4a39a9aa65d10275bf358ae8; expires=Wed, 19-Jan-2011 23:58:24 GMT; path=/; domain=.grooveshark.com
+Expires: Thu, 19 Nov 1981 08:52:00 GMT
+Cache-Control: no-store, no-cache, must-revalidate, post-check=0, pre-check=0
+Pragma: no-cache
+Vary: Accept-Encoding
+Content-Encoding: gzip
+X-Hostname: rhl060
+Content-Length: 137
+
+\n
+{"header":{"session":"f5992e2e4a39a9aa65d10275bf358ae8","serviceVersion":"20100903","prefetchEnabled":true},"result":{"Token":"2vGqcA"}}
+
+5. Then POSTs to /more.php?getStreamKeyFromSongIDEx
+
+POST /more.php?getStreamKeyFromSongIDEx HTTP/1.1
+Host: cowbell.grooveshark.com
+Connection: keep-alive
+Referer: http://listen.grooveshark.com/JSQueue.swf?20101203.25
+Content-Length: 484
+content-type: application/json
+Accept: */*
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.0; en-US) AppleWebKit/534.10 (KHTML, like Gecko) Chrome/8.0.552.224 Safari/534.10
+Accept-Encoding: gzip,deflate,sdch
+Accept-Language: tr-TR,tr;q=0.8,en-US;q=0.6,en;q=0.4
+Accept-Charset: ISO-8859-9,utf-8;q=0.7,*;q=0.3
+Cookie: __qca=P0-2035555991-1279657891648; __gads=ID=4a5ed88e2a1b2210:T=1279693202:S=ALNI_MZjGW8no2rUnK1xYCDRF2HaKxvl4A; PHPSESSID=f5992e2e4a39a9aa65d10275bf358ae8
+
+Payload:
+
+{"parameters":{"songID":46065,"mobile":false,"prefetch":false,"country":{"CC4":"2097152","IPR":"9581","CC2":"0","CC1":"0","ID":"214","CC3":"0"}},"header":{"token":"79a90be8b4db440a09392025205db3c696e097f64bf6cb","session":"f5992e2e4a39a9aa65d10275bf358ae8","client":"jsqueue","clientRevision":"20101012.37","privacy":0,"uuid":"EADC6534-03A8-43D0-A6EA-B2AECA75E458","country":{"CC4":"2097152","IPR":"9581","CC2":"0","CC1":"0","ID":"214","CC3":"0"}},"method":"getStreamKeyFromSongIDEx"}
+
+Response:
+
+HTTP/1.1 200 OK
+Server: nginx
+Date: Wed, 12 Jan 2011 23:58:25 GMT
+Content-Type: text/html; charset=UTF-8
+Connection: close
+X-Powered-By: PHP/5.2.14
+Set-Cookie: PHPSESSID=f5992e2e4a39a9aa65d10275bf358ae8; expires=Wed, 19-Jan-2011 23:58:25 GMT; path=/; domain=.grooveshark.com
+Set-Cookie: PHPSESSID=f5992e2e4a39a9aa65d10275bf358ae8; expires=Wed, 19-Jan-2011 23:58:25 GMT; path=/; domain=.grooveshark.com
+Expires: Thu, 19 Nov 1981 08:52:00 GMT
+Cache-Control: no-store, no-cache, must-revalidate, post-check=0, pre-check=0
+Pragma: no-cache
+Vary: Accept-Encoding
+Content-Encoding: gzip
+X-Hostname: rhl082
+Content-Length: 247
+
+{"header":{"session":"f5992e2e4a39a9aa65d10275bf358ae8","serviceVersion":"20100903","prefetchEnabled":true},"result":{"uSecs":"194000000","FileToken":"2vGqcA","streamKey":"513ab977e8047e7f4281330351b6283d3c2d5927_4d2e4279_b3f1_15f0509_10ef61ed_1","streamServerID":524288,"ip":"stream66b.grooveshark.com"}}
+
+6. Hmmm POSTs to more.php?markSongDownloadedEx
+
+POST /more.php?markSongDownloadedEx HTTP/1.1
+Host: cowbell.grooveshark.com
+Connection: keep-alive
+Referer: http://listen.grooveshark.com/JSQueue.swf?20101203.25
+Content-Length: 478
+content-type: application/json
+Accept: */*
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.0; en-US) AppleWebKit/534.10 (KHTML, like Gecko) Chrome/8.0.552.224 Safari/534.10
+Accept-Encoding: gzip,deflate,sdch
+Accept-Language: tr-TR,tr;q=0.8,en-US;q=0.6,en;q=0.4
+Accept-Charset: ISO-8859-9,utf-8;q=0.7,*;q=0.3
+Cookie: __qca=P0-2035555991-1279657891648; __gads=ID=4a5ed88e2a1b2210:T=1279693202:S=ALNI_MZjGW8no2rUnK1xYCDRF2HaKxvl4A; PHPSESSID=f5992e2e4a39a9aa65d10275bf358ae8
+
+{"parameters":{"streamKey":"513ab977e8047e7f4281330351b6283d3c2d5927_4d2e4279_b3f1_15f0509_10ef61ed_1","songID":46065,"streamServerID":524288},"header":{"token":"fe0af4aec52c80b4e0743058fc71c89f56817881e30b4d","session":"f5992e2e4a39a9aa65d10275bf358ae8","client":"jsqueue","clientRevision":"20101012.37","privacy":0,"uuid":"EADC6534-03A8-43D0-A6EA-B2AECA75E458","country":{"CC4":"2097152","IPR":"9581","CC2":"0","CC1":"0","ID":"214","CC3":"0"}},"method":"markSongDownloadedEx"}
+
+Response:
+HTTP/1.1 200 OK
+Server: nginx
+Date: Wed, 12 Jan 2011 23:58:25 GMT
+Content-Type: text/html; charset=UTF-8
+Connection: close
+X-Powered-By: PHP/5.2.14
+Set-Cookie: PHPSESSID=f5992e2e4a39a9aa65d10275bf358ae8; expires=Wed, 19-Jan-2011 23:58:25 GMT; path=/; domain=.grooveshark.com
+Set-Cookie: PHPSESSID=f5992e2e4a39a9aa65d10275bf358ae8; expires=Wed, 19-Jan-2011 23:58:25 GMT; path=/; domain=.grooveshark.com
+Expires: Thu, 19 Nov 1981 08:52:00 GMT
+Cache-Control: no-store, no-cache, must-revalidate, post-check=0, pre-check=0
+Pragma: no-cache
+Vary: Accept-Encoding
+Content-Encoding: gzip
+X-Hostname: rhl081
+Content-Length: 129
+
+{"header":{"session":"f5992e2e4a39a9aa65d10275bf358ae8","serviceVersion":"20100903","prefetchEnabled":true},"result":{"Return":true}}
+
+7. Finally POSTs to stream.php, and here comes the MP3
+
+POST /stream.php HTTP/1.1
+Host: stream66b.grooveshark.com
+Connection: keep-alive
+Referer: http://listen.grooveshark.com/JSQueue.swf?20101203.25
+Content-Length: 93
+content-type: application/x-www-form-urlencoded
+Accept: */*
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.0; en-US) AppleWebKit/534.10 (KHTML, like Gecko) Chrome/8.0.552.224 Safari/534.10
+Accept-Encoding: gzip,deflate,sdch
+Accept-Language: tr-TR,tr;q=0.8,en-US;q=0.6,en;q=0.4
+Accept-Charset: ISO-8859-9,utf-8;q=0.7,*;q=0.3
+Cookie: __qca=P0-2035555991-1279657891648; __gads=ID=4a5ed88e2a1b2210:T=1279693202:S=ALNI_MZjGW8no2rUnK1xYCDRF2HaKxvl4A; PHPSESSID=f5992e2e4a39a9aa65d10275bf358ae8
+
+streamKey=513ab977e8047e7f4281330351b6283d3c2d5927%5F4d2e4279%5Fb3f1%5F15f0509%5F10ef61ed%5F1
+
+Response:
+X-Powered-By: PHP/5.1.6
+Cache-Control: no-cache, no-store, must-revalidate
+Pragma: no-cache
+Expires: Sat, 26 Jul 1997 05:00:00 GMT
+Content-Type: audio/mpeg
+ETag: "217914585"
+Accept-Ranges: bytes
+Last-Modified: Tue, 10 Aug 2010 09:06:09 GMT
+Content-Length: 4143711
+Connection: close
+Date: Wed, 12 Jan 2011 23:58:26 GMT
+Server: lighttpd/1.5.0
+
+ID3.....8`TT2....Yegelle Tezeta.TP1....Mulatu Astatke.TCM....Various.TAL....Broken</pre>
+<p><a onclick="jQuery('#groovenotes').slideToggle();">show/hide notes</a></p>
+</div>
+<p>Today, I put that notes in action and coded this little program in C#. It is a non-blocking asynchronous IO program, I didn't use threads at all. Grooveshark communication stack is around 350 lines of C# code. In practice, you don't need all those API calls in the notes. Here's the procedure applied in the above program:</p>
+<ol>
+<li>Fetch a page from listen.grooveshark.com to extract PHPSESSID cookie.</li>
+<li>Then call getCommunicationToken API to get your token. You use md5 hash of your PHPSESSID to get this token.</li>
+<li>You'll use this token to generate another token that you use in from now on. This was annoying.</li>
+<li>At this point you can make any API calls, i.e. stuff that you don't need registration for. But I wanted to get playlists. So I need logging in.</li>
+<li>POST the login form you see in the listen.grooveshark.com to empty.php.</li>
+<li>Call authenticateUser API. Now you are logged in.</li>
+<li>Then call userGetPlaylists to get play lists.</li>
+<li>Call playlistGetSongs for each play list in parallel to download song list for all of the play lists at once.</li>
+<li>For each song you want to download, call getStreamKeyFromSongIDEx to get download information</li>
+<li>Download the song with the download information just acquired. Again, I do all the downloads in parallel.</li>
+</ol>
+<p>If I clean the code to a point that it is not embarrassing, I'll release it. I made all these stuff very very quickly to get it done, it is quite dirty.</p>
+<p>Cheers.</p>
+<div id="_mcePaste" style="position: absolute; left: -10000px; top: 491px; width: 1px; height: 1px; overflow-x: hidden; overflow-y: hidden;">You'll use this token to generate another token that you use in from now on.userGetPlaylists</div>
+
+</div>
+
+
+          <div class="footer">
+            <div class="contact">
+              <p>
+                Engin AYDOGAN<br />
+                Thinker<br />
+                e@ea.tl
+              </p>
+            </div>
+            <div class="contact">
+              <p>
+                <a href="https://github.com/yourusername">github.com/engina</a><br />
+                <a href="https://twitter.com/yourusername">twitter.com/jastsayn</a><br />
+                <a class="extra" href="90s/">90s</a>
+              </p>
+            </div>
+          </div>
+        </div>
+    </body>
+</html>

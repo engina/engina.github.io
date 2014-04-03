@@ -1,0 +1,39 @@
+<html>
+<head>
+	<title>engin aydogan - pop! pop them up!</title>
+</head>
+<body>
+<h1>pop! pop them up!</h1>
+
+<p>
+When I log into my IM accounts such as MSN and ICQ, kopete tries to inform me about all the online accounts and creates tons of KPassivePopups.
+The problem with this method is each created popup covers the one which is previously created. Which means if you popup message "Foo", "Bar", "John" consecutively you'll only end up seeing "John".
+</p>
+<p>
+That was irritating, especially when two or more contacts goes online at the same time. But I could live with it.
+</p>
+
+<p>
+But when I started coding another project which needs to inform the user
+time to time, I just felt like coding up a popup manager which will put
+popups on the screen in an intelligent manner.
+</p>
+
+<p>
+It's quite simple, you enqueue QWidgets in it, and it pops them up and moves them to their smart positions with a linearly decreasing accelaration. It looks quite fancy.
+</p>
+<div style="text-align:center"><img src="images/popup.png"></div>
+<p>
+See it yourselves! <a href="files/dscn0009.mov">movie1 (6.3M)</a> <a href="files/dscn0010.mov">movie2 (5.8M)</a> 
+</p>
+
+<p>
+In the movie, you'll see popups are adjusting themselves according to kicker's position.
+</p>
+
+<p>
+Unfortunetely the code is not sanitized yet, but the code can be reached via <a href="http://websvn.kde.org/trunk/playground/network/knetd/knetd/">websvn</a>, related files: popup*
+</p>
+
+</body>
+</html>

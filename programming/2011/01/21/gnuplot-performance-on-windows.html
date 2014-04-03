@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <title>gnuplot performance on windows</title>
+        <meta name="viewport" content="width=device-width">
+        <script src="//cdnjs.cloudflare.com/ajax/libs/prettify/r298/run_prettify.min.js" type="text/javascript"></script>
+        <!-- syntax highlighting CSS -->
+        <link rel="stylesheet" href="/css/syntax.css">
+
+        <!-- Custom CSS -->
+        <link rel="stylesheet" href="/css/main.css">
+
+    </head>
+    <body>
+
+        <div class="site">
+          <div class="header">
+            <h1 class="title"><a href="/">Your New Jekyll Site</a></h1>
+            <a class="extra" href="/">home</a>
+          </div>
+
+          <h2>gnuplot performance on windows</h2>
+<p class="meta">21 Jan 2011</p>
+
+<div class="post">
+<p><a href="http://www.gnuplot.info/">gnuplot</a> is an unbelievably good tool, if you don't know it yet, check it out. Though the gnuplot Windows package has performance problems. No matter how much I tweaked the parameters and tried different rendering engines (terminal in gnuplot jargon), I couldn't fix it. It was taking more than 5 seconds to render 350k data points.</p>
+<p><a href="http://www.cygwin.com/">Cygwin</a> is a part of my toolchain. Today I figured I might give gnuplot with Cygwin/X11 a shot. Cygwin also has a gnuplot package which is built for Cygwin environment. Cygwin also has a X11 package, so that you can run a X11 server on your Windows box. Actually there are several other X11 server implementations for Windows out there, even commercial ones.  Anyway, I've tried to plot my graphs using Cygwin gnuplot and X11. And voila! It was about 5 times faster.</p>
+<p>So, having gnuplot performance problems on Windows ? If you don't mind installing Cygwin (which is simply a double click and next, next, next) you can enjoy a faster gnuplot experience.</p>
+
+</div>
+
+
+          <div class="footer">
+            <div class="contact">
+              <p>
+                Engin AYDOGAN<br />
+                Thinker<br />
+                e@ea.tl
+              </p>
+            </div>
+            <div class="contact">
+              <p>
+                <a href="https://github.com/yourusername">github.com/engina</a><br />
+                <a href="https://twitter.com/yourusername">twitter.com/jastsayn</a><br />
+                <a class="extra" href="90s/">90s</a>
+              </p>
+            </div>
+          </div>
+        </div>
+    </body>
+</html>

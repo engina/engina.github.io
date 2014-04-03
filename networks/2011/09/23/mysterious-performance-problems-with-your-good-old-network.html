@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <title>Mysterious performance problems with your good old network</title>
+        <meta name="viewport" content="width=device-width">
+        <script src="//cdnjs.cloudflare.com/ajax/libs/prettify/r298/run_prettify.min.js" type="text/javascript"></script>
+        <!-- syntax highlighting CSS -->
+        <link rel="stylesheet" href="/css/syntax.css">
+
+        <!-- Custom CSS -->
+        <link rel="stylesheet" href="/css/main.css">
+
+    </head>
+    <body>
+
+        <div class="site">
+          <div class="header">
+            <h1 class="title"><a href="/">Your New Jekyll Site</a></h1>
+            <a class="extra" href="/">home</a>
+          </div>
+
+          <h2>Mysterious performance problems with your good old network</h2>
+<p class="meta">23 Sep 2011</p>
+
+<div class="post">
+<p>Even though we haven't changed our network infrastructure for quite some time we started to have network performance problems. Eventually, the network started to stop working from time to time. Router stopped handing out DHCP leases and sometimes freeze all of a sudden.</p>
+<p>Not only this, but the networked device which we are developing also started to suffer severely from network problems. The performance was so bad, we couldn't connect to it over LAN and even if we did, it was a very fragile connection.</p>
+<p>We have changed many ADSL Modem routers that you could find on your computer hardware store. None of them could handle it.</p>
+<p>Lately, we bought a Mikrotik RB/450. It is a tiny box with 300 MHz CPU and 64MB RAM. With RouterOS installed on it, which is a Linux based solution. I put our ADSL Modem in Bridge Mode, than used the PPPoE client on the RouterOS to connect to the internet. This way, there is basically no load on the ADSL Modem. And voila! Network is performing fantastically.</p>
+<p>Couple of observations:</p>
+<ol>
+<li><span class="Apple-style-span" style="line-height: 18px;">With around 30 active clients, you get 250-600 active connections in NAT table at any given time. </span></li>
+<li><span class="Apple-style-span" style="line-height: 18px;">Our monthly bandwidth usage is around 190 GB</span></li>
+</ol>
+<div><span style="font-size: medium;"><strong><span class="Apple-style-span" style="line-height: 18px;">But why did this started to happen now ?</span></strong></span></div>
+<p>The reason the routers started falling is probably the evolving technology and internet using habits of users. Browsers are using more and more connections and users are opening more and more tabs. There <a href="http://www.smallnetbuilder.com/index.php?option=com_chart&amp;Itemid=&amp;chart=124">this</a> web site which claims listing how many simultaneous connections can a router handle. I haven't checked reliability of their measurement methods but if we assume the list is accurate, you'd see there are plenty of routers that can't handle 250 connections (which is our minimum).</p>
+<p>I'm extremely pleased with the Mikrotik RB/450 and I recommended it to any SOHO.</p>
+<p>The performance problem of our networked devices is another story however. Since, our PCs and devices are connected to the same switch, our connection does not even require a router to orchestrate the packets. Only problem a router could cause trouble for us is the DHCP problem, which can be worked around with assigning static IPs.</p>
+<p>However, I started to get suspicious about all the broadcast traffic new Windows versions was generating lately. Then, I did some experiments with our networked device which was having serious network problems, I noticed that it works as expected when</p>
+<ol>
+<li><span class="Apple-style-span" style="line-height: 18px;">It is directly connected to the PC</span></li>
+<li><span class="Apple-style-span" style="line-height: 18px;">Only the device and the PC was connected to a switch -- and nothing else is connected to the switch.</span></li>
+</ol>
+<div><span class="Apple-style-span" style="line-height: 18px;">When I plug the company LAN to the switch the device started performing poorly again because it tried to check if all those broadcast messages was actually something useful or not. The problem is, there's no hardware filtering available on the device. As an additional challenge, hardware buffer of the Ethernet is implemented as a FIFO, so I can't read arbitrary points in the buffer. So, I have to copy the whole hardware buffer to user space before I can actually filter on it. Filtering is easy and not a problem but copying the data is. I'll see if I can optimize this in the near future.</span></div>
+<div></div>
+<div></div>
+<div>Moral of the day, new protocols that use broadcasting aggressively are not good network citizens.</div>
+
+</div>
+
+
+          <div class="footer">
+            <div class="contact">
+              <p>
+                Engin AYDOGAN<br />
+                Thinker<br />
+                e@ea.tl
+              </p>
+            </div>
+            <div class="contact">
+              <p>
+                <a href="https://github.com/yourusername">github.com/engina</a><br />
+                <a href="https://twitter.com/yourusername">twitter.com/jastsayn</a><br />
+                <a class="extra" href="90s/">90s</a>
+              </p>
+            </div>
+          </div>
+        </div>
+    </body>
+</html>

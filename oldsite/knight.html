@@ -1,0 +1,65 @@
+<html>
+<head>
+	<title>Knights tour problem solved in  C. Warning: crappy code.</title>
+	<LINK REL=StyleSheet HREF="engin.css" TYPE="text/css" MEDIA=screen>
+</head>
+<body>
+<h1>Knights tour problem solved in  C. Warning: crappy code.</h1>
+
+<b>UPDATE 10-MAY-2009: I've found some cgi-bin binaries of this and added them as online demos</b> <br>
+
+<p>
+Online demos:
+<ul>
+<li><a href="http://engin.bzzzt.biz/cgi-bin/knight8x8">8x8 Board solution</a></li>
+<li><a href="http://engin.bzzzt.biz/cgi-bin/knight19x17">19x17 Board solution</a><br></li>
+</ul>
+
+As you can see this algorithm can solve knights problem for arbitrary sized boards.
+</p>
+
+Wow. This is some crappy old code.
+<p>
+[<a href="code.php?a=v&f=knight.c&t=c">View</a> | <a href="code.php?a=d&f=knight.c">Download</a>] Source
+
+<p>
+<pre class="console">
+engin@engin-desktop:~$ gcc -o knight knight.c
+engin@engin-desktop:~$ ./knight
+Content-type: text/plain
+
+The knights tour problem (with Warnsdorff method)
+Refresh for another solution.
+Board: 9X9
+Initial X: 4 Initial Y: 4
+
+
+Solution successfully found.
+State of the board:
++----+----+----+----+----+----+----+----+----+----+
+|  0 |  1 |  2 |  3 |  4 |  5 |  6 |  7 |  8 |  9 |
++----+----+----+----+----+----+----+----+----+----+
+|  1 | 43 |  4 | 67 | 60 | 41 |  6 | 33 | 58 | 39 |
++----+----+----+----+----+----+----+----+----+----+
+|  2 | 66 | 71 | 42 |  5 | 68 | 59 | 40 |  7 | 34 |
++----+----+----+----+----+----+----+----+----+----+
+|  3 |  3 | 44 | 69 | 72 | 61 | 32 | 79 | 38 | 57 |
++----+----+----+----+----+----+----+----+----+----+
+|  4 | 70 | 65 | 62 |  1 | 76 | 73 | 56 | 35 |  8 |
++----+----+----+----+----+----+----+----+----+----+
+|  5 | 45 |  2 | 75 | 64 | 55 | 78 | 31 | 80 | 37 |
++----+----+----+----+----+----+----+----+----+----+
+|  6 | 20 | 63 | 54 | 77 | 74 | 25 | 36 |  9 | 30 |
++----+----+----+----+----+----+----+----+----+----+
+|  7 | 49 | 46 | 21 | 26 | 53 | 28 | 81 | 12 | 15 |
++----+----+----+----+----+----+----+----+----+----+
+|  8 | 22 | 19 | 48 | 51 | 24 | 17 | 14 | 29 | 10 |
++----+----+----+----+----+----+----+----+----+----+
+|  9 | 47 | 50 | 23 | 18 | 27 | 52 | 11 | 16 | 13 |
++----+----+----+----+----+----+----+----+----+----+
+Solved in 483 mirco seconds
+
+</pre>
+
+</body>
+</html>

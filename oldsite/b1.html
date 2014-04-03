@@ -1,0 +1,24 @@
+<html>
+<head>
+	<title>engin aydogan - Benchmark of CGI/BASH, CGI/C, CGI/PERL and PHP on forking commands</title>
+</head>
+<body>
+<h1>Benchmark of CGI/BASH, CGI/C, CGI/PERL and PHP on forking commands</h1>
+<p>
+'ve ran `ab -n 1000 -c 100 host/file` on several PHP, PERL and BASH scripts and a C binary which does the same job. ab is a benchmarking tool provided by apache project. The request per second results are as follows;
+</p>
+<p>
+1) CGI/BASH 77 req/sec [<a href="code.php?a=v&f=fork.sh&t=bash">View</a> | <a href="code.php?a=d&f=fork.sh">Download</a>] Source</a>
+<br>
+2) CGI/PERL 70 req/sec [<a href="code.php?a=v&f=fork.pl&t=perl">View</a> | <a href="code.php?a=d&f=fork.pl">Download</a>] Source</a>
+<br>
+3) CGI/C 61 req/sec [<a href="code.php?a=v&f=fork.c&t=c">View</a> | <a href="code.php?a=d&f=fork.c">Download</a>] Source</a>
+<br>
+4) PHP 59req/sec  [<a href="code.php?a=v&f=fork.php&t=php">View</a> | <a href="code.php?a=d&f=fork.php">Download</a>] Source</a>
+</p>
+Server hardware was one Athlon XP 1800+ with 512 DDR RAM with totally not tweaked Apache 2.0.55 on Gentoo.
+
+The req/sec for a static page varied from 1000 to 1300, just fyi.
+
+</body>
+</html>

@@ -1,0 +1,67 @@
+<html>
+<head>
+	<title>engin aydogan - Transparent network interface hot-swapping</title>
+</head>
+<body>
+<h1>Transparent network interface hot-swapping</h1>
+<p>
+I got pretty bored with all the researching I've been doing about embedded systems, so I decided to post some old stuff!
+</p>
+<p>
+A few months ago I was frustrated with the lack of a proper network manager so I decided to write my own ( I didn't know of the project networkmanager by that time ).
+</p>
+<p>
+The main problem is that we can't switch between network interfaces on the fly without breaking current connections. Which means, when I'm not mobile I plug my kickass laptop to wired network which is like 10 times faster than the wireless network. So, when I want to get mobile, I had to turn the wireless interface up and unplug the network cable. A regular switch ( wireless interface up, wired interface down) screws the current connections, i.e. you get disconnected from all the services you've connected to.
+</p>
+<p>
+The problem is easy to fix with a little hack. Read on.
+Assume you have two network interfaces; eth0 and wlan0, where eth0 is wired and wlan0 is the wireless interface. To switch from eth0 to wlan0 without any connection breakage follow these steps;
+</p>
+(Assuming you already have eth0 up)
+
+<pre>
+# your_favorite_dhcp_client wlan0
+# ifconfig wlan0 add CURRENT_IP_OF_ETH0
+# ifconfig eth0 down
+</pre>
+
+<p>
+And you're switched to wlan0, without any breakage!
+</p>
+
+<p>
+OK, very well. So, what we need is a daemon which is smart enough to do this ( or an equivalent ) operation on certain circumstances. I've gave NetworkManager project several shots where it always failed. Beyond failing, it screwed my ongoing connections. I consider myself as an experienced user, but I couldn't figure out what the heck was wrong with it.
+</p>
+<p>
+By the time I was designed most of my network manager, which is called knetd. It was able to detect cable plug/unplug, and IP changes on interfaces etc. It's easy to issue the above commands on cable unplug, but it takes much more than that to write the daemon properly. It's always hard to make it work right!
+</p>
+<p>
+After I've coded the knetd draft, I've put it into the kde playground, which is accessible via <a href="http://websvn.kde.org/trunk/playground/network/knetd/">websvn</a>.
+</p>
+
+<p>
+The problem with knetd and several network daemons is that they fork external processes such as ifconfig, iwconfig etc. Forking processes and reading the output is simply, well... error-prone if not lame!
+</p>
+
+<p>
+So I've started porting knetd to use ioctl calls to use linux kernel interface in order to get and set network interface settings. As usual after I've ported the half of the code, I lost my focus. Suddenly number of things to do went wild.
+</p>
+
+<p>
+As the TODOs went wild, I thought of porting knetd to use NetworkManager backend since it would be not re-inventing the wheel and it's always very good to use existing code since it's already engineered and debugged. But as I gave NetworkManager several more shots, it failed me again and again.
+</p>
+
+<p>
+So here we are. As of this writing I think a common C library must be writting to get/set network interface settings. And by making use of that library we should build a working daemon. libnl looks like a very good candidate!
+</p>
+
+<p>
+There's no OS that's doing this automagical transparent network interface switching to my knowledge, not linux, not Mac OS X, not MS Windows. It's a surprize that it's not yet implemented since it's not rocket sience! (BTW, I've heard that the upcoming MS Windows, Vista, will do this).
+</p>
+
+<p>
+Well, well. I started to write this entry just to show you a new approach to passive popups but here we are... 
+</p>
+
+</body>
+</html>

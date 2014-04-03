@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <title>Buffalo Tech just as bad as Seagate ? Newly arrived external hard drive does NOT work - HD-LX2.0TU-EU</title>
+        <meta name="viewport" content="width=device-width">
+        <script src="//cdnjs.cloudflare.com/ajax/libs/prettify/r298/run_prettify.min.js" type="text/javascript"></script>
+        <!-- syntax highlighting CSS -->
+        <link rel="stylesheet" href="/css/syntax.css">
+
+        <!-- Custom CSS -->
+        <link rel="stylesheet" href="/css/main.css">
+
+    </head>
+    <body>
+
+        <div class="site">
+          <div class="header">
+            <h1 class="title"><a href="/">Your New Jekyll Site</a></h1>
+            <a class="extra" href="/">home</a>
+          </div>
+
+          <h2>Buffalo Tech just as bad as Seagate ? Newly arrived external hard drive does NOT work - HD-LX2.0TU-EU</h2>
+<p class="meta">11 Aug 2012</p>
+
+<div class="post">
+<p>I just received my 2 TB Buffalo Tech external USB drive (HD-LX2.0TU-EU). I had to buy a new drive because my external 1 TB Seagate drive started to fail. This makes my <strong>3rd</strong> (THIRD) Seagate drive which failed and one of those failures costed me $3000 data rescue bill. It was a good lesson to set up an automated incremental backup system thereafter though. That's it, I will NEVER buy a Seagate product ever again. But, wait, Buffalo turns out to be worse! It didn't work from the beginning :)</p>
+<p><strong><span style="font-size: large;">How do you tell if a drive is failing ?</span></strong></p>
+<p>Simple, by checking <a href="http://en.wikipedia.org/wiki/S.M.A.R.T.">S.M.A.R.T.</a> diagnostic values.</p>
+<p>If you are lucky enough, you'd have a tool that periodically checks your drives S.M.A.R.T. diagnostics and report you in the case of a possible problem. The most typical S.M.A.R.T. attribute I saw on failing hard drives was <strong>Reallocation </strong><strong>Count</strong>, it means that some sectors on the drive starts malfunctioning hence those sectors are mapped to some spare sectors. This simply means that your hard drive is starting to fail and it will soon collapse. Sorry.</p>
+<p>If you were not lucky enough to get these signs before it's too late, you'll start to see ugly face of disk failures.</p>
+<p>Apparently (or naturally) most software developers does take it for granted that a disk access will take quick enough time that, it does not need to be done in another "thread". These software developers include the giants such as Microsoft and Apple. Imagine you're trying to open a folder to list its contents in Windows Explorer and the drive is failing, soon enough, whole your Windows Explorer window "freeze", stopping processing UI events, such as mouse or keyboard events. In fact, the software is not frozen, it simply is waiting for the disk read operation to complete, which virtually renders it frozen :)</p>
+<p>I do not understand why Microsoft engineers decided to design Windows Explorer in such a manner, though maybe, it's simply me misinterpreting the problem above, maybe the problem lays somewhere else.</p>
+<p>Microsoft is not alone, I just witnessed how Apple's Disk Utulity and whole OS UI started to fall apart when a failing drive was trying to be read.</p>
+<p>And not just that, our beloved VLC, XBMC they all suffer when the local disk file read attempt is halted. XBMC simply looks like frozen, not processing any UI events.</p>
+<p><strong><span style="font-size: large;">So what happened with Buffalo Tech External Hard Drive ?</span></strong></p>
+<p>Well, I just received my new hard drive and unboxed it, as we usually do. I connected it to my Mac Mini (latest series) which runs Lion (10.7). Nothing happened, I launched Disk Utulity and everything just got unresponsive, after a while I saw the drive in Disk Utulity, but everything was so unresponsive, it was practically impossible to work with.</p>
+<p>Then, I though I should give Windows a try and connected this drive to my Sony VAIO Laptop. Windows popped up the System Tray balloon as it usually does, "Installing driver for new device". It took quite some time, I tried re-plugging the drive (probably a bad idea), then balloon told me that new driver installation failed.</p>
+<p>Then I checked <strong>Window Device Manager</strong>, there it was, <strong>USB Mass Storage Device</strong><em>, </em>though after a while, a yellow exclamation mark appears next to it. When you double click the device, <strong>Device Status</strong> says <strong>This device cannot start. (Code 10)</strong>.</p>
+<p>Though the documentation provided by Buffalo says, there should be three devices listed.</p>
+<pre class="prettyprint">Device                                  Device Name in Device Manager
+Universal Serial Bus controllers        USB Mass Storage Device
+Disk drives                             BUFFALO HD-LXU3 USB Device
+DVD/CD-ROM Drive                        BUFFALO Virtual Cdrom USB Device</pre>
+<p>So, I decided to give Mac Mini one more shot. Again, nothing happened, this time the drive is not seen at all. At my first try, I could at least see the disk in the Disk Utulity. I checked the kernel.log, and here's what it say:</p>
+<pre class="prettyprint">Aug 11 12:36:52 Engins-Mac-mini kernel[0]: USBMSC Identifier (non-unique): 0109A0000A8F 0x411 0x1f7 0x1
+Aug 11 12:37:02 Engins-Mac-mini kernel[0]: USBF:        5102.142        AppleUSBEHCI[0xffffff800762c000]::Found a transaction past the completion deadline on bus 0xfd, timing out! (Addr: 4, EP: 2)
+Aug 11 12:37:13 Engins-Mac-mini kernel[0]: USBF:        5113.151        AppleUSBEHCI[0xffffff800762c000]::Found a transaction past the completion deadline on bus 0xfd, timing out! (Addr: 4, EP: 2)
+Aug 11 12:37:25 Engins-Mac-mini kernel[0]: USBF:        5125.160        AppleUSBEHCI[0xffffff800762c000]::Found a transaction past the completion deadline on bus 0xfd, timing out! (Addr: 4, EP: 2)
+Aug 11 12:37:37 Engins-Mac-mini kernel[0]: USBF:        5137.169        AppleUSBEHCI[0xffffff800762c000]::Found a transaction past the completion deadline on bus 0xfd, timing out! (Addr: 4, EP: 2)
+Aug 11 12:37:49 Engins-Mac-mini kernel[0]: USBF:        5149.180        AppleUSBEHCI[0xffffff800762c000]::Found a transaction past the completion deadline on bus 0xfd, timing out! (Addr: 4, EP: 2)
+Aug 11 12:38:01 Engins-Mac-mini kernel[0]: USBF:        5161.190        AppleUSBEHCI[0xffffff800762c000]::Found a transaction past the completion deadline on bus 0xfd, timing out! (Addr: 4, EP: 2)
+Aug 11 12:38:01 Engins-Mac-mini kernel[0]: IOUSBMassStorageClass[0xffffff8007e94e00]: The device is still unresponsive after 6 consecutive USB Device Resets; it will be terminated.</pre>
+<p>So, now that the drive is completely utterly failing -- not even showing the drive in the Disk Utulity as it did for the first time I plugged it. I decided I dig deeper in the kernel.log, and here's log of the hard drives first ever power on and a connection to a host computer.</p>
+<pre class="prettyprint">Aug 11 11:04:31 Engins-Mac-mini kernel[0]: USBMSC Identifier (non-unique): 0109A0000A8F 0x411 0x1f7 0x1
+Aug 11 11:04:41 Engins-Mac-mini kernel[0]: USBF:        30845.761       AppleUSBEHCI[0xffffff8007169000]::Found a transaction past the completion deadline on bus 0xfd, timing out! (Addr: 5, EP: 2)
+Aug 11 11:04:43 Engins-Mac-mini kernel[0]: NTFS driver 3.10.1 [Flags: R/W].
+Aug 11 11:04:43 Engins-Mac-mini kernel[0]: NTFS volume name HD-LXU3, version 3.1.
+Aug 11 11:04:49 Engins-Mac-mini kernel[0]: BootCache: could not terminate cache on bad hitrate
+Aug 11 11:05:49 Engins-Mac-mini kernel[0]: USBF:        30913.808       AppleUSBEHCI[0xffffff8007169000]::Found a transaction past the completion deadline on bus 0xfd, timing out! (Addr: 5, EP: 1)
+Aug 11 11:06:38 Engins-Mac-mini kernel[0]: USBF:        30962.844       AppleUSBEHCI[0xffffff8007169000]::Found a transaction past the completion deadline on bus 0xfd, timing out! (Addr: 5, EP: 1)
+Aug 11 11:06:58 Engins-Mac-mini kernel[0]: disk2: I/O error.
+Aug 11 11:08:27 Engins-Mac-mini kernel[0]: (default pager): [KERNEL]: ps_allocate_cluster - send HI_WAT_ALERT
+Aug 11 11:08:28 Engins-Mac-mini kernel[0]: macx_swapon SUCCESS
+Aug 11 11:09:05 Engins-Mac-mini kernel[0]: USBF:        31108.956       AppleUSBEHCI[0xffffff8007169000]::Found a transaction past the completion deadline on bus 0xfd, timing out! (Addr: 5, EP: 1)
+Aug 11 11:09:36 Engins-Mac-mini kernel[0]: USBF:        31139.981       AppleUSBEHCI[0xffffff8007169000]::Found a transaction past the completion deadline on bus 0xfd, timing out! (Addr: 5, EP: 2)
+Aug 11 11:10:00 Engins-Mac-mini kernel[0]: disk2s1: I/O error.
+Aug 11 11:10:00 Engins-Mac-mini kernel[0]: NTFS-fs error (device /dev/disk2s1, pid 134): ntfs_mft_record_map_ext(): Failed to read buffer of mft record 0x5 (error 5).
+Aug 11 11:10:00 Engins-Mac-mini kernel[0]: NTFS-fs error (device /dev/disk2s1, pid 134): ntfs_lookup_inode_by_name(): Failed to map mft record for directory (error 5).
+Aug 11 11:10:00 Engins-Mac-mini kernel[0]: NTFS-fs error (device /dev/disk2s1, pid 134): ntfs_vnop_lookup(): Failed to find name in directory (error 5).</pre>
+<p>It turns out that in the first try, it could read some information such as the partition table from the disk, but as you can see the I/O errors (which caused the extreme unresponsiveness in the Mac UI) the drive started failing immediately.</p>
+<p>Finally, I thought there's a problem with the USB 2.0 compatibility. This drive is marketed as a super fast USB 3.0 drive with claimed USB 2.0 compatibility. Neither my Mac Mini nor my Sony VAIO have USB 3.0. So, I got my brother new VAIO and tried with its USB 3.0 interface... Again with no success.</p>
+<p>In the end this drive is tested with Mac Mini, Macbook and two Sony VAIO laptops with no success.</p>
+<p>I've sent an email to Buffalo Tech support, we'll see how they handle this situation.</p>
+
+</div>
+
+
+          <div class="footer">
+            <div class="contact">
+              <p>
+                Engin AYDOGAN<br />
+                Thinker<br />
+                e@ea.tl
+              </p>
+            </div>
+            <div class="contact">
+              <p>
+                <a href="https://github.com/yourusername">github.com/engina</a><br />
+                <a href="https://twitter.com/yourusername">twitter.com/jastsayn</a><br />
+                <a class="extra" href="90s/">90s</a>
+              </p>
+            </div>
+          </div>
+        </div>
+    </body>
+</html>
