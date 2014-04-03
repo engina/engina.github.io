@@ -86,14 +86,14 @@ To be honest, it's written in a very limited time, and it's in alpha stage, but 
     var k = [];
     $(document).ready(function(){
       $(document).keyup(function(e){
-        // 57 48 83
         k.push(e.keyCode);
-        if(k.length > 2 && k[0] == 57 && k[1] == 48 && k[2] == 83) {
-          console.log('ok');
-          document.location.href = '/90s/';
-        }
+
         while(k.length > 3) {
           k.shift();
+        }
+
+        if(k.join() == '57,48,83') {
+          document.location.href = '/90s/';
         }
       });
     });
