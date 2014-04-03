@@ -6,13 +6,13 @@
 <h1>noise reduction by synchronized averaging</h1>
 
 <p>
-A friend of mine wanted my help on her thesis, one part of the thesis was about "synchronized averaging". By the time I've searched the web, there were no implementations available. I had no knowledge or prior experience in the field but I come up with an implementation (in Matlab) after reading the definition of the technique. Matlab is not my decision obviously, in fact, I don't know Matlab, just wrote it heuristicly :-) <a href="files/dsp-project.zip">Download</a> the code.
+A friend of mine wanted my help on her thesis, one part of the thesis was about "synchronized averaging". By the time I've searched the web, there were no implementations available. I had no knowledge or prior experience in the field but I come up with an implementation (in Matlab) after reading the definition of the technique. Matlab is not my decision obviously, in fact, I don't know Matlab, just wrote it heuristicly :-) <a href="/assets/dsp-project.zip">Download</a> the code.
 </p>
 
 <p>
 For whom, who doesn't know what this is all about; This is a noise reduction technique. Imagine there is a repeating pattern in a signal, for instance; heart beats. You extract each beat from the original signal. So you got the beats as seperate signals. Imagine you've aligned all those seperate beat signals vertically, in rows of a matrix. You can visualize that they are now "synchronized", hence the name. This was the hard part. After extracting the beats you simply calculate the average. You sum all the rows, and divide by row number. So you'll end up with a signal which has the beat with reduced noise. Green signal is the original beat. Blue is the result of noise reduction by syncronized averaging.
 </p>
-<div style="text-align:center"><img src="images/saf.jpg"></div>
+<div style="text-align:center"><img src="/assets/saf.jpg"></div>
 
 <br>
 <h3>Here is procedure:</h3>

@@ -9,7 +9,7 @@
 Every now and then, I upload big files such as images and videos, or send an e-mails with big attachments. During these uploads inteactive applications such as an ssh session are lagged to death, and it becomes a pain in the ass to type anything.
 Well, to overcome this limitation I came up with a script that limits upload bandwidth of big file uploads and gives the lower priority. Naturally, in contrast it gives higher priority to interactive communication. To do this of course we need some sort of classification of both different cases. I've used probably the simplest one. Big packets are used in big file uploads, I've marked packets with size greater than 500 byte as big. And packets smaller than 500 bytes as small. I've assigned bandwidths to these small and big packets. And voila! It worked for me. I'm using this for years.
 <br>
-[<a href="code.php?a=v&f=qos.sh&t=bash">View</a> |  <a href="code.php?a=d&f=qos.sh">Download</a>] the script.
+<a href="https://github.com/engina/engina.github.io/blob/master/assets/qos.sh">view source</a>
 
 <br>
 <h3>NOTES:</h3>
