@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <title>zero-configuration connectivity on embedded computers - Engin AYDOGAN's Journal</title>
+        <meta name="viewport" content="width=device-width">
+        <script src="//cdnjs.cloudflare.com/ajax/libs/prettify/r298/run_prettify.min.js" type="text/javascript"></script>
+        <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.0/jquery.min.js" type="text/javascript"></script>
+        <!-- syntax highlighting CSS -->
+        <link rel="stylesheet" href="/css/syntax.css">
+
+        <!-- Custom CSS -->
+        <link rel="stylesheet" href="/css/main.css">
+
+    </head>
+    <body>
+
+        <div class="site">
+          <div class="header">
+            <h1 class="title"><a href="/">Engin AYDOGAN's Journal</a></h1>
+            <a class="extra" href="/">home</a>
+          </div>
+
+          <h2>zero-configuration connectivity on embedded computers</h2>
+<p class="meta">20 Jul 2010</p>
+
+<div class="post">
+<p>Our device is networked. It is supposed to:</p>
+<ul>
+<li>Work when you plug it into any traditional Ethernet network (i.e. with router with embedded DHCP server).</li>
+<li>It is also supposed to work when you directly connect it to another node (i.e. a computer which you're want to configure the device with -- where no DHCP server is available).</li>
+</ul>
+<p>So our goal is:</p>
+<ul>
+<li>Zero-configuration connectivity on above two scenarios.</li>
+</ul>
+<p>Our requirement:</p>
+<ul>
+<li>Severely scarce resources. Firmware should fit in a 64kb space.</li>
+</ul>
+<p>Most such networked devices comes with a static IP already set and the node which is supposed to configure them (usually a PC) is supposed to be set to a specific IP address in the same subnet to configure them. This has several drawbacks:</p>
+<ul>
+<li>Users need to have administration privilleges</li>
+<li>Users need to have experience with computers</li>
+<li>And this is OS dependent.</li>
+</ul>
+<p>There are other zero-configuration technology stacks, even though I don't have a scientific fact, from their specs I think they'd take up significant code space.</p>
+<p>So here's what I've did</p>
+<ol>
+<li>During device boot I assign it a link-local IP address (i.e. AUTOIP or <a href="http://tools.ietf.org/html/rfc3927">http://tools.ietf.org/html/rfc3927</a>). I did not implement RFC3927 and just generated a fixed IP address according to MAC of the device -- partly because I don't have a quality random number generator, as there's no clock on most of the devices and reading analog inputs often give same results.</li>
+<li>Then I start DHCP negotiations</li>
+</ol>
+<p>With the scenario the device is able to communicate with another node which also have been assigned to a link-local address without waiting for a DHCP timeout. So when you plug your device directly to your computer you can communicate with the device as soon as your computer also assigned itself a link-local address. This varies from OS to OS but we're pleased with the results. Our customers are able to connect to their devices without any configuration.</p>
+<p>But there's a problem! Even though this configuration worked on our network at the office and many other places where we sold the devices to, it didn't work on my home network. It turned out that my linksys router in my home network does not honor DHCP DISCOVER requests if their source IP addresses are not 0.0.0.0</p>
+<p>Problem:</p>
+<ul>
+<li>Some DHCP servers does not honor DHCP DISCOVER requests from 169.254.C.D. They strictly require source IP of the requests to be 0.0.0.0</li>
+</ul>
+<p>To solve this problem I could either</p>
+<ul>
+<li>First assign my device IP address 0.0.0.0 and then wait for DHCP timeout, then fallback to AUTO IP. This way DHCP DISCOVER request would work with all routers but other party would have to wait for my device to timeout DHCP and fallback to link-local IP before starting communicating with it -- this is a serious tradeoff.</li>
+<li>Or Add UDP IP Spoofing on top of our current implementation hence just make the DHCP DISCOVER source IP 0.0.0.0 and keep the rest the same.</li>
+</ul>
+<p>Obviously I chose the second approach and patched uIP with the following code:</p>
+<pre class="prettyprint">$ svn diff
+Index: uip/uip.c
+===================================================================
+--- uip/uip.c   (revision 226)
++++ uip/uip.c   (working copy)
+@@ -1181,7 +1181,17 @@
+   BUF-&gt;srcport  = uip_udp_conn-&gt;lport;
+   BUF-&gt;destport = uip_udp_conn-&gt;rport;
+
+-  uip_ipaddr_copy(BUF-&gt;srcipaddr, uip_hostaddr);
++  extern int g_udp_spoof;
++  extern uip_ipaddr_t g_udp_spoof_ip;
++  if(!g_udp_spoof)
++  {
++    uip_ipaddr_copy(BUF-&gt;srcipaddr, uip_hostaddr);
++  }
++  else
++  {
++       g_udp_spoof = 0;
++       uip_ipaddr_copy(BUF-&gt;srcipaddr, g_udp_spoof_ip);
++  }
+   uip_ipaddr_copy(BUF-&gt;destipaddr, uip_udp_conn-&gt;ripaddr);
+
+   uip_appdata = &amp;uip_buf[UIP_LLH_LEN + UIP_IPTCPH_LEN];</pre>
+<p>Now our device apparently has best of both worlds.</p>
+<ul>
+<li>It can communicate with any node with link-local IP address right away at boot time -- without waiting for any sort of (DHCP) timeout.</li>
+<li>While link-local communication is working, it tries to acquire an IP address from DHCP server in parallel -- thanks to source IP "spoofing".</li>
+</ul>
+<p>I'll see if further testing will reveal any side effects.</p>
+<p>See also:<br />
+DHCP RFC: <a href="http://tools.ietf.org/html/rfc2131">http://tools.ietf.org/html/rfc2131</a><br />
+Link-local IP Address (AUTO IP): <a href="http://tools.ietf.org/html/rfc3927">http://tools.ietf.org/html/rfc3927</a></p>
+
+</div>
+    <div id="disqus_thread"></div>
+    <script type="text/javascript">
+        /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+        var disqus_shortname = 'enginsjournal'; // required: replace example with your forum shortname
+
+        /* * * DON'T EDIT BELOW THIS LINE * * */
+        (function() {
+            var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        })();
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+    
+
+          <div class="footer">
+            <div class="contact">
+              <p>
+                Engin AYDOGAN<br />
+                Thinker<br />
+                e@ea.tl
+              </p>
+            </div>
+            <div class="contact">
+              <p>
+                <a href="https://github.com/yourusername">github.com/engina</a><br />
+                <a href="https://twitter.com/yourusername">twitter.com/jastsayn</a><br />
+                <a class="extra" href="90s/">90s</a>
+              </p>
+            </div>
+          </div>
+        </div>
+    </body>
+    <script type="text/javascript">
+    var k = [];
+    $(document).ready(function(){
+      $(document).keyup(function(e){
+        // 57 48 83
+        k.push(e.keyCode);
+        if(k.length > 2 && k[0] == 57 && k[1] == 48 && k[2] == 83) {
+          console.log('ok');
+          document.location.href = '/90s/';
+        }
+        while(k.length > 3) {
+          k.shift();
+        }
+      });
+    });
+    </script>
+</html>

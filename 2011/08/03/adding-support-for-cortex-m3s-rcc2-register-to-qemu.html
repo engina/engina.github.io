@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <title>Adding support for Cortex-M3's RCC2 register to QEMU - Engin AYDOGAN's Journal</title>
+        <meta name="viewport" content="width=device-width">
+        <script src="//cdnjs.cloudflare.com/ajax/libs/prettify/r298/run_prettify.min.js" type="text/javascript"></script>
+        <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.0/jquery.min.js" type="text/javascript"></script>
+        <!-- syntax highlighting CSS -->
+        <link rel="stylesheet" href="/css/syntax.css">
+
+        <!-- Custom CSS -->
+        <link rel="stylesheet" href="/css/main.css">
+
+    </head>
+    <body>
+
+        <div class="site">
+          <div class="header">
+            <h1 class="title"><a href="/">Engin AYDOGAN's Journal</a></h1>
+            <a class="extra" href="/">home</a>
+          </div>
+
+          <h2>Adding support for Cortex-M3's RCC2 register to QEMU</h2>
+<p class="meta">03 Aug 2011</p>
+
+<div class="post">
+<p>I was trying to run my firmware on QEMU, but it turns out it lacks a hardware register support for my target CPU. There was this unbelievably helpful guy in the QEMU channel, Peter Maydell, who helped me about the patching process.</p>
+<p>The thread is here: https://lists.gnu.org/archive/html/qemu-devel/2011-08/msg00517.html</p>
+<p>The patch is here:</p>
+<pre class="prettyprint"> hw/stellaris.c |   72 ++++++++++++++++++++++++++++++++++++++++++++++++++++---
+ 1 files changed, 68 insertions(+), 4 deletions(-)
+
+diff --git a/hw/stellaris.c b/hw/stellaris.c
+index a280930..70db99f 100644
+--- a/hw/stellaris.c
++++ b/hw/stellaris.c
+@@ -332,6 +332,7 @@ typedef struct {
+     uint32_t int_mask;
+     uint32_t resc;
+     uint32_t rcc;
++    uint32_t rcc2;
+     uint32_t rcgc[3];
+     uint32_t scgc[3];
+     uint32_t dcgc[3];
+@@ -386,6 +387,32 @@ static uint32_t pllcfg_fury[16] = {
+     0xb11c /* 8.192 Mhz */
+ };
+ 
++#define DID0_VER_MASK        0x70000000
++#define DID0_VER_0           0x00000000
++#define DID0_VER_1           0x10000000
++
++#define DID0_CLASS_MASK      0x00FF0000
++#define DID0_CLASS_SANDSTORM 0x00000000
++#define DID0_CLASS_FURY      0x00010000
++
++static int ssys_board_class(const ssys_state *s)
++{
++    uint32_t did0 = s-&gt;board-&gt;did0;
++    switch (did0 &amp; DID0_VER_MASK) {
++    case DID0_VER_0:
++        return DID0_CLASS_SANDSTORM;
++    case DID0_VER_1:
++        switch (did0 &amp; DID0_CLASS_MASK) {
++        case DID0_CLASS_SANDSTORM:
++        case DID0_CLASS_FURY:
++            return did0 &amp; DID0_CLASS_MASK;
++        }
++        /* for unknown classes, fall through */
++    default:
++        hw_error("ssys_board_class: Unknown class 0x%08x\n", did0);
++    }
++}
++
+ static uint32_t ssys_read(void *opaque, target_phys_addr_t offset)
+ {
+     ssys_state *s = (ssys_state *)opaque;
+@@ -429,12 +456,18 @@ static uint32_t ssys_read(void *opaque, 
+target_phys_addr_t offset)
+         {
+             int xtal;
+             xtal = (s-&gt;rcc &gt;&gt; 6) &amp; 0xf;
+-            if (s-&gt;board-&gt;did0 &amp; (1 &lt;&lt; 16)) {
++            switch (ssys_board_class(s)) {
++            case DID0_CLASS_FURY:
+                 return pllcfg_fury[xtal];
+-            } else {
++            case DID0_CLASS_SANDSTORM:
+                 return pllcfg_sandstorm[xtal];
++            default:
++                hw_error("ssys_read: Unhandled class for PLLCFG read.\n");
++                return 0;
+             }
+         }
++    case 0x070: /* RCC2 */
++        return s-&gt;rcc2;
+     case 0x100: /* RCGC0 */
+         return s-&gt;rcgc[0];
+     case 0x104: /* RCGC1 */
+@@ -467,9 +500,21 @@ static uint32_t ssys_read(void *opaque, target_phys_addr_t 
+offset)
+     }
+ }
+ 
++static bool ssys_use_rcc2(ssys_state *s)
++{
++    return (s-&gt;rcc2 &gt;&gt; 31) &amp; 0x1;
++}
++
++/*
++ * Caculate the sys. clock period in ms.
++ */
+ static void ssys_calculate_system_clock(ssys_state *s)
+ {
+-    system_clock_scale = 5 * (((s-&gt;rcc &gt;&gt; 23) &amp; 0xf) + 1);
++    if (ssys_use_rcc2(s)) {
++        system_clock_scale = 5 * (((s-&gt;rcc2 &gt;&gt; 23) &amp; 0x3f) + 1);
++    } else {
++        system_clock_scale = 5 * (((s-&gt;rcc &gt;&gt; 23) &amp; 0xf) + 1);
++    }
+ }
+ 
+ static void ssys_write(void *opaque, target_phys_addr_t offset, uint32_t value)
+@@ -505,6 +550,18 @@ static void ssys_write(void *opaque, target_phys_addr_t 
+offset, uint32_t value)
+         s-&gt;rcc = value;
+         ssys_calculate_system_clock(s);
+         break;
++    case 0x070: /* RCC2 */
++        if (ssys_board_class(s) == DID0_CLASS_SANDSTORM) {
++            break;
++        }
++
++        if ((s-&gt;rcc2 &amp; (1 &lt;&lt; 13)) != 0 &amp;&amp; (value &amp; (1 &lt;&lt; 13)) == 0) {
++            /* PLL enable.  */
++            s-&gt;int_status |= (1 &lt;&lt; 6);
++        }
++        s-&gt;rcc2 = value;
++        ssys_calculate_system_clock(s);
++        break;
+     case 0x100: /* RCGC0 */
+         s-&gt;rcgc[0] = value;
+         break;
+@@ -562,6 +619,12 @@ static void ssys_reset(void *opaque)
+ 
+     s-&gt;pborctl = 0x7ffd;
+     s-&gt;rcc = 0x078e3ac0;
++
++    if (ssys_board_class(s) == DID0_CLASS_SANDSTORM) {
++        s-&gt;rcc2 = 0;
++    } else {
++        s-&gt;rcc2 = 0x07802810;
++    }
+     s-&gt;rcgc[0] = 1;
+     s-&gt;scgc[0] = 1;
+     s-&gt;dcgc[0] = 1;
+@@ -578,7 +641,7 @@ static int stellaris_sys_post_load(void *opaque, int 
+version_id)
+ 
+ static const VMStateDescription vmstate_stellaris_sys = {
+     .name = "stellaris_sys",
+-    .version_id = 1,
++    .version_id = 2,
+     .minimum_version_id = 1,
+     .minimum_version_id_old = 1,
+     .post_load = stellaris_sys_post_load,
+@@ -589,6 +652,7 @@ static const VMStateDescription vmstate_stellaris_sys = {
+         VMSTATE_UINT32(int_status, ssys_state),
+         VMSTATE_UINT32(resc, ssys_state),
+         VMSTATE_UINT32(rcc, ssys_state),
++        VMSTATE_UINT32_V(rcc2, ssys_state, 2),
+         VMSTATE_UINT32_ARRAY(rcgc, ssys_state, 3),
+         VMSTATE_UINT32_ARRAY(scgc, ssys_state, 3),
+         VMSTATE_UINT32_ARRAY(dcgc, ssys_state, 3),
+-- 
+1.7.4.1</pre>
+
+</div>
+    <div id="disqus_thread"></div>
+    <script type="text/javascript">
+        /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+        var disqus_shortname = 'enginsjournal'; // required: replace example with your forum shortname
+
+        /* * * DON'T EDIT BELOW THIS LINE * * */
+        (function() {
+            var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        })();
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+    
+
+          <div class="footer">
+            <div class="contact">
+              <p>
+                Engin AYDOGAN<br />
+                Thinker<br />
+                e@ea.tl
+              </p>
+            </div>
+            <div class="contact">
+              <p>
+                <a href="https://github.com/yourusername">github.com/engina</a><br />
+                <a href="https://twitter.com/yourusername">twitter.com/jastsayn</a><br />
+                <a class="extra" href="90s/">90s</a>
+              </p>
+            </div>
+          </div>
+        </div>
+    </body>
+    <script type="text/javascript">
+    var k = [];
+    $(document).ready(function(){
+      $(document).keyup(function(e){
+        // 57 48 83
+        k.push(e.keyCode);
+        if(k.length > 2 && k[0] == 57 && k[1] == 48 && k[2] == 83) {
+          console.log('ok');
+          document.location.href = '/90s/';
+        }
+        while(k.length > 3) {
+          k.shift();
+        }
+      });
+    });
+    </script>
+</html>

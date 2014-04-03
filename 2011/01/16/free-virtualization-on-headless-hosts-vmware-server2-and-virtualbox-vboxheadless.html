@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <title>Free virtualization on headless hosts; vmware-server2 and virtualbox (vboxheadless) - Engin AYDOGAN's Journal</title>
+        <meta name="viewport" content="width=device-width">
+        <script src="//cdnjs.cloudflare.com/ajax/libs/prettify/r298/run_prettify.min.js" type="text/javascript"></script>
+        <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.0/jquery.min.js" type="text/javascript"></script>
+        <!-- syntax highlighting CSS -->
+        <link rel="stylesheet" href="/css/syntax.css">
+
+        <!-- Custom CSS -->
+        <link rel="stylesheet" href="/css/main.css">
+
+    </head>
+    <body>
+
+        <div class="site">
+          <div class="header">
+            <h1 class="title"><a href="/">Engin AYDOGAN's Journal</a></h1>
+            <a class="extra" href="/">home</a>
+          </div>
+
+          <h2>Free virtualization on headless hosts; vmware-server2 and virtualbox (vboxheadless)</h2>
+<p class="meta">16 Jan 2011</p>
+
+<div class="post">
+<p>Virtualization is cool. It gives you the ability to:</p>
+<ul>
+<li>Deploy nodes into your cluster in minutes</li>
+<li>Get the most out of your hardware, even if your software is not very efficient. i.e. it is proven that multiple instances of MS IIS running on a host in separate VMs are more efficient than a single MS IIS instance on the host. Which implies that MS IIS is not engineered to utulize hardware very well.</li>
+</ul>
+<h3>vmware-server 2</h3>
+<hr />In short:</p>
+<ul>
+<li>Installation: very easy.</li>
+<li>Management: Web access did not work. VMWare Infrastructure Client did not work.</li>
+<li>Stability: Crashes on guest OS update.</li>
+</ul>
+<p>First of all, I want to say that I've used this a couple of years ago and I was very pleased with it. Now I tried to install it on CentOS 5.5 host to install a Windows 2003 guest OS. Installation was a breeze but managing the virtual machines turned into a nightmare. I couldn't reliably access to the web interface no matter what I tried. According to logs there was an error in SSL handshaking, tried to solve the issue by trying a few workarounds presented in forums, with no luck.</p>
+<p>Then, I recalled that there was a native desktop application called VMWare Infrastructure Client which I used previously. It was previously located on https://host:8333/clients/ but now it is not there for some reason. It is not even in the docroot directory on the host. It simply is not there.</p>
+<p>Then, with the help of google I found the executable and installed it. I connected to the host but the console was always blank (white). Then I googled a bit more to find out that VIC has some problems if it co-exists with the new VIC (VMWare sphere client). Then I removed the new client and installed the v2.5 again. This time it worked. I installed the Windows 2003 server. Mind that I occasionally lost connection to the console during this process.</p>
+<p>After the initial boot, I tried to update the server through Windows Update. One of the child processes of VMWare consistently crashed at this point, rendering whole VMWare unusable. I tried a few times, it always crashed at this point with a core dump and backtrace in the logs.</p>
+<p>At this point, I give up giving any more chances to vmware-server 2 on CentOS 5.5.</p>
+<h3>VirtualBox</h3>
+<hr />
+<p>Then I started looking around if VirtualBox had support for headless hosts, it turned out it has some basic support -- with decent documentation.</p>
+<p>First <a href="http://www.virtualbox.org/manual/ch02.html">install VirtualBox</a> for your platform. I simply added repo to /etc/yum/repo.d and installed via yum. Then <a href="http://www.virtualbox.org/manual/ch08.html#vboxmanage-extpack">install extension packs</a>. Which basically boils down to this;</p>
+<pre class="prettyprint">
+[root@tr ~]# wget http://download.virtualbox.org/virtualbox/4.0.0/Oracle_VM_VirtualBox_Extension_Pack-4.0.0-69151.vbox-extpack
+[root@tr ~]# VBoxManage extpack install Oracle_VM_VirtualBox_Extension_Pack-4.0.0-69151.vbox-extpack
+</pre>
+<p>See <a href="http://www.virtualbox.org/manual/ch07.html#id486223">Installing Guest OS on a headless VirtalBox host.</a></p>
+<p>Notes:</p>
+<ul>
+<li>In the example, it is using NAT as networking, you probably want bridged;</li>
+<li>At first, I tried --cpus 4, but it gave me "Error: failed to start machine. Error message: Unknown error creating VM (VERR_VMX_MSR_LOCKED_OR_DISABLED)". I simply fell back to --cpus 1, and it is working fine.</li>
+</ul>
+<p>I've used:</p>
+<pre class="prettyprint">[root@tr ~]# VBoxManage modifyvm "Win2003E" --memory 2048 --acpi on --boot1 dvd --nic1 bridged --cpus 1 --bridgeadapter1 eth0</pre>
+<p>Then, of course we need Guest Additions. It is a matter of clicking on traditional VirtualBox installation, but this is a headless installation. I just mounted the VBoxGuestAdditions.iso myself.</p>
+<pre class="prettyprint">
+[root@tr ~]# VBoxManage storageattach "Win2003E" --storagectl "IDE Controller" --port 0 --device 1 --type dvddrive --medium /usr/share/virtualbox/VBoxGuestAdditions.iso
+</pre>
+<p>It automatically starts the setup, just follow the wizard and you'll be on your way.</p>
+<p>
+At this point, you should have Windows 2003 server up and running with VirtualBox Guest additions. I'd also recommend taking snapshots along the way.</p>
+<pre class="prettyprint">
+[root@tr ~]# VBoxManage snapshot "Win2003E" take "VBox guest additions installed"
+</pre>
+<p>
+Nice.</p></p>
+
+</div>
+    <div id="disqus_thread"></div>
+    <script type="text/javascript">
+        /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+        var disqus_shortname = 'enginsjournal'; // required: replace example with your forum shortname
+
+        /* * * DON'T EDIT BELOW THIS LINE * * */
+        (function() {
+            var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        })();
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+    
+
+          <div class="footer">
+            <div class="contact">
+              <p>
+                Engin AYDOGAN<br />
+                Thinker<br />
+                e@ea.tl
+              </p>
+            </div>
+            <div class="contact">
+              <p>
+                <a href="https://github.com/yourusername">github.com/engina</a><br />
+                <a href="https://twitter.com/yourusername">twitter.com/jastsayn</a><br />
+                <a class="extra" href="90s/">90s</a>
+              </p>
+            </div>
+          </div>
+        </div>
+    </body>
+    <script type="text/javascript">
+    var k = [];
+    $(document).ready(function(){
+      $(document).keyup(function(e){
+        // 57 48 83
+        k.push(e.keyCode);
+        if(k.length > 2 && k[0] == 57 && k[1] == 48 && k[2] == 83) {
+          console.log('ok');
+          document.location.href = '/90s/';
+        }
+        while(k.length > 3) {
+          k.shift();
+        }
+      });
+    });
+    </script>
+</html>
