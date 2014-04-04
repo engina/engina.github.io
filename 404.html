@@ -3,16 +3,20 @@
 <head>
 	<title>four-oh-four :(</title>
     <link href='http://fonts.googleapis.com/css?family=Sonsie+One' rel='stylesheet' type='text/css'>
-
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.0/jquery.min.js"></script>
 	<style type="text/css">
-		#message
+		#error, #pleasewait
+		{
+			display: none;
+		}
+		.description
 		{
 			font-size: 20px;
 			color: #243748;
 			text-shadow: 0 1px 1px rgba(255, 255, 255, 0.33);
 		}
 
-		#error
+		.bigwhite
 		{
 			font-family: 'Sonsie One', cursive;
 			font-size: 100px;
@@ -57,10 +61,20 @@
 	</style>
 </head>
 <body>
-	<div class="content"><div class="align">
-		<div id="error" >four-oh-four :(</div>
-		<div id="message">The page you are looking for does not exist, or removed, or relocated. You could try browsing <a href="/">from here.</a>.</div>
-	</div></div>
+	<div class="content">
+		<div class="align">
+			<div id="error">
+				<div class="bigwhite" >four-oh-four :(</div>
+				<div class="description">The page you are looking for does not exist, or removed, or relocated. You could try browsing <a href="/">from here.</a>.</div>
+			</div>
+			<div id="pleasewait">
+				<div class="bigwhite">
+					Please wait...
+				</div>
+				<div class="description">As I try to locate your file. Things has changed when I moved away from Wordpress.</div>
+			</div>
+		</div>
+	</div>
 </body>
 
 <script type="text/javascript"> 
@@ -69,6 +83,19 @@ document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.
 </script> 
 
 <script type="text/javascript"> 
+if(window.location.href.substr(-5) != '.html'){
+	// Maybe this is a page referenced from WP, in that case the new URL is ea.tl/foo-bar.html for ea.tl/foo-bar/
+	// And GitHub pages gives no option to offer HTTP responses of permenant move, so...
+	var url = window.location.href;
+	if(url.substr(-1) == '/'){
+		url = url.slice(0, -1);
+	}
+	window.location.href = url + '.html';
+	$('#pleasewait').show();
+} else {
+	// This is most certainly a 404
+	$('#error').show();
+}
 try {
 	var pageTracker = _gat._getTracker("UA-12273926-1");
 	pageTracker._trackPageview();

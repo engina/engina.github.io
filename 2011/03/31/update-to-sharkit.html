@@ -77,15 +77,15 @@
     var k = [];
     $(document).ready(function(){
       $(document).keypress(function(e){
-        console.log(e);
         k.push(e.which);
 
         while(k.length > 64) {
           k.shift();
         }
+        
         if(e.which != 13) return;
-        // OMG! OMG! OMG! Is this an easter egg?
         k.pop();
+        // OMG! OMG! OMG! Is this an easter egg?
         if(CryptoJS.SHA3(k.join()).toString() == 'd24cbabf2cfe116cd74597b61095a44f40bcc89d7b1acde8158ad23c38b5409a84d37d3c00a74639b4f5df228d2d734a52b93675fd60a5ad56a303c79950e8d3') {
           var p = ''; $(k).each(function(e,b){p += String.fromCharCode(b);});
           document.location.href = CryptoJS.enc.Utf8.stringify(CryptoJS.AES.decrypt('U2FsdGVkX188+NsdA42FiRFwL9yG8aa/GEgHdIO2Cpw=', p));
