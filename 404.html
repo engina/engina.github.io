@@ -4,10 +4,21 @@
 	<title>four-oh-four :(</title>
     <link href='http://fonts.googleapis.com/css?family=Sonsie+One' rel='stylesheet' type='text/css'>
     <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.0/jquery.min.js"></script>
+    <script src="//raw.githubusercontent.com/Glench/fuzzyset.js/54cfb17f77be14a0b855f7b9dca9d5655c91a4ae/lib/fuzzyset.js"></script>
 	<style type="text/css">
-		#error, #pleasewait
+		#error
 		{
 			display: none;
+		}
+
+		#suggestions
+		{
+			border-radius: 15px;
+			background-color: rgba(255,255,255,0.1);
+			width: 50%;
+			margin-left: 25%;
+			padding: 10px;
+			box-shadow: 3px 3px 10px 1px;
 		}
 		.description
 		{
@@ -58,6 +69,11 @@
 		{
 			height: 100%;
 		}
+
+		ol
+		{
+			text-align: center;
+		}
 	</style>
 </head>
 <body>
@@ -65,7 +81,14 @@
 		<div class="align">
 			<div id="error">
 				<div class="bigwhite" >four-oh-four :(</div>
-				<div class="description">The page you are looking for does not exist, or removed, or relocated. You could try browsing <a href="/">from here.</a>.</div>
+				<div class="description">The page you are looking for does not exist, or removed, or relocated. You could try browsing <a href="/">from here.</a>.
+				    <br/><br/>
+				    <div id="suggestions">
+						Here are some matches for your convenience:
+						<ol>
+						</ol>
+					</div>
+				</div>
 			</div>
 			<div id="pleasewait">
 				<div class="bigwhite">
@@ -82,20 +105,40 @@ var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "htt
 document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
 </script> 
 
-<script type="text/javascript"> 
-if(window.location.href.substr(-5) != '.html'){
-	// Maybe this is a page referenced from WP, in that case the new URL is ea.tl/foo-bar.html for ea.tl/foo-bar/
-	// And GitHub pages gives no option to offer HTTP responses of permenant move, so...
-	var url = window.location.href;
-	if(url.substr(-1) == '/'){
-		url = url.slice(0, -1);
+<script type="text/javascript">
+// Build index from the main page. We want to do this ASAP.
+var index = [];
+$.get('index.html', function(data){
+	$(data).find('a').each(function(i, e){
+		index.push(e.pathname);
+	});
+
+	// Index ready, try to find the requested resource
+	var f = new FuzzySet(index, false, 1, 5);
+	var r = f.get(window.location.pathname);
+
+	if(r.length > 0 && r[0][0] > 0.8){
+		// Very close match, just redirect.
+		window.location.href = r[0][1];
+	} else {
+		// Display error message
+		$('#pleasewait').hide();
+		$('#error').show();
+
+		// See if there are some matches we can suggest
+		if(r.length > 0) {
+			for(m in r){
+				$('#suggestions ol').append('<li><a href="' + r[m][1] + '">' + r[m][1] + '</a></li>');
+			}
+
+			if($('#suggestions li').length > 1){
+				$('#suggestions').show();
+			}
+		}
 	}
-	window.location.href = url + '.html';
-	$('#pleasewait').show();
-} else {
-	// This is most certainly a 404
-	$('#error').show();
-}
+});
+
+
 try {
 	var pageTracker = _gat._getTracker("UA-12273926-1");
 	pageTracker._trackPageview();
