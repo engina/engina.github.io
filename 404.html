@@ -110,7 +110,7 @@ value=i+j;prev=current[j];current[j]=value;}return current.pop();};var _distance
 
 // Build index from the main page. We want to do this ASAP.
 var index = [];
-$.get('index.html', function(data){
+$.get('/index.html', function(data){
 	$(data).find('a').each(function(i, e){
 		index.push(e.pathname);
 	});
