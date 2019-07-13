@@ -22,6 +22,7 @@
       #logo {
         padding: 5px;
       }
+
       #hack {
           width: 90%;
       }
@@ -41,7 +42,6 @@
     </div>
   </body>
   <script lang="javascript">
-    var l = document.querySelector('#logo');
-    l.onclick = () => document.location = 'mailto:e@eaas.co?subject=Hello';
+    document.querySelector('#logo').onclick = () => document.location = 'mailto:e@eaas.co?subject=Hello';
   </script>
 </html>
